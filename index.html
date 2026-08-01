@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>לוח סטטיסטיקה — תגובות ציבוריות לסגלוביץ׳–רע״ם</title>
+<style>
+  :root {
+    --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc;
+    --card:#fff; --ok:#15803d; --warn:#ca8a04; --bad:#b91c1c; --accent:#0f766e;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; font-family:"Segoe UI","Heebo","Assistant",Arial,sans-serif;
+    background:linear-gradient(180deg,#ecfeff 0%,var(--bg) 28%,#f1f5f9 100%);
+    color:var(--ink); line-height:1.55;
+  }
+  .wrap { max-width:1120px; margin:0 auto; padding:28px 20px 64px; }
+  h1 { font-size:1.8rem; margin:0 0 6px; letter-spacing:-0.02em; }
+  h2 { font-size:1.15rem; margin:0 0 12px; }
+  h3 { font-size:1rem; margin:14px 0 8px; }
+  .lede { color:var(--muted); margin:0 0 18px; max-width:68ch; }
+  .sub { color:var(--muted); font-size:.78rem; font-weight:500; }
+  .filterbar {
+    position:sticky; top:0; z-index:20;
+    background:rgba(255,255,255,.94); backdrop-filter:blur(8px);
+    border:1px solid var(--line); border-radius:14px;
+    padding:12px 14px; margin-bottom:16px;
+    box-shadow:0 4px 20px rgba(15,23,42,.06);
+    display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center;
+  }
+  .filterbar .label { font-weight:650; font-size:.92rem; }
+  .segbtns { display:flex; flex-wrap:wrap; gap:6px; }
+  .segbtns button {
+    border:1px solid var(--line); background:#fff; color:var(--ink);
+    border-radius:999px; padding:7px 12px; font:inherit; font-size:.88rem; cursor:pointer;
+  }
+  .segbtns button.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .filter-meta { color:var(--muted); font-size:.82rem; margin-right:auto; }
+  .filter-meta b { color:var(--ink); }
+  .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+  @media (max-width:820px) {
+    .kpis { grid-template-columns:repeat(2,1fr); }
+    .filter-meta { width:100%; margin:4px 0 0; }
+    .grid2,.cov,.soc-split { grid-template-columns:1fr !important; }
+    .xgrid { grid-template-columns:1fr 1fr !important; }
+  }
+  .kpi {
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:16px 16px 14px; box-shadow:0 1px 0 rgba(15,23,42,.04);
+  }
+  .kpi .n { font-size:1.85rem; font-weight:750; letter-spacing:-0.03em; line-height:1.1; }
+  .kpi .t { color:var(--muted); font-size:.86rem; margin-top:4px; }
+  .kpi.ok .n { color:var(--ok); } .kpi.warn .n { color:var(--warn); }
+  .kpi.bad .n { color:var(--bad); } .kpi.accent .n { color:var(--accent); }
+  section {
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:18px; margin-bottom:16px; box-shadow:0 1px 0 rgba(15,23,42,.03);
+  }
+  table { width:100%; border-collapse:collapse; font-size:.92rem; }
+  th,td { padding:9px 8px; border-bottom:1px solid var(--line); vertical-align:middle; text-align:right; }
+  th { color:var(--muted); font-weight:600; font-size:.8rem; }
+  .num { font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .ok { color:var(--ok); font-weight:650; } .warn { color:var(--warn); font-weight:650; }
+  .bad { color:var(--bad); font-weight:650; }
+  .barcell { min-width:140px; }
+  .bar { display:flex; border-radius:999px; overflow:hidden; background:#e2e8f0; }
+  .seg { height:100%; }
+  .legend { display:flex; flex-wrap:wrap; gap:14px; margin:8px 0 14px; font-size:.85rem; color:var(--muted); }
+  .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-left:6px; }
+  .callout {
+    border-radius:12px; padding:12px 14px; margin:10px 0 4px; font-size:.92rem;
+    background:#fff7ed; border:1px solid #fed7aa;
+  }
+  .callout.bad { background:#fef2f2; border-color:#fecaca; }
+  .callout.ok { background:#f0fdf4; border-color:#bbf7d0; }
+  .callout.info { background:#f0f9ff; border-color:#bae6fd; }
+  .grid2 { display:grid; grid-template-columns:1.15fr .85fr; gap:14px; }
+  .xgrid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  .soc-split { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .soc-col h3 {
+    margin:0 0 10px; font-size:1rem; display:flex; align-items:center; gap:8px;
+  }
+  .cov { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .xcard,.ccard {
+    border:1px solid var(--line); border-radius:12px; padding:12px; background:#f8fafc;
+  }
+  .xcard .n,.ccard .n {
+    font-size:1.45rem; font-weight:750; font-variant-numeric:tabular-nums; letter-spacing:-0.02em;
+  }
+  .xcard .t,.ccard .t { color:var(--muted); font-size:.82rem; margin-top:4px; line-height:1.35; }
+  a { color:var(--accent); text-decoration:underline; text-underline-offset:2px; }
+  a:hover { color:#115e59; }
+  .xcard .hint { display:block; font-size:.75rem; color:#94a3b8; margin-top:4px; }
+  .plat {
+    display:inline-block; font-size:.68rem; font-weight:700; letter-spacing:.03em;
+    padding:2px 7px; border-radius:4px; vertical-align:middle; margin-left:4px;
+    color:#fff; white-space:nowrap;
+  }
+  .plat.x { background:#0f172a; }
+  .plat.fb { background:#1877f2; }
+  .dups { display:grid; gap:8px; }
+  .dup { border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:#fafafa; }
+  .dup-h { font-size:.85rem; color:var(--muted); margin-bottom:4px; }
+  ul.compact { margin:0; padding-right:18px; }
+  ul.compact li { margin:4px 0; }
+  code { font-size:.84em; background:#f1f5f9; padding:1px 5px; border-radius:4px; }
+  footer { color:var(--muted); font-size:.8rem; margin-top:18px; }
+  .totalbar-wrap { margin:6px 0 4px; }
+  .totalbar-wrap .bar { height:18px; }
+  .delta { font-size:.8rem; color:var(--muted); }
+  .delta.up { color:var(--bad); } .delta.down { color:var(--ok); }
+  .pill {
+    display:inline-block; font-size:.75rem; font-weight:650; padding:2px 8px;
+    border-radius:999px; background:#e2e8f0; color:#334155; margin-right:6px;
+  }
+  .pill.g { background:#dcfce7; color:#166534; }
+  .pill.r { background:#fee2e2; color:#991b1b; }
+  .pill.a { background:#e0f2fe; color:#075985; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>לוח סטטיסטיקה — תגובות ציבוריות לסגלוביץ׳–רע״ם</h1>
+  <p class="lede">
+    תמונת מצב של תגובות באתרי חדשות, אותנטיות/תיאום, רשתות (X ופייסבוק) וכיסוי תקשורתי
+    סביב חבירת יואב סגלוביץ׳–רע״ם — בעקבות
+    <a href="https://www.ynet.co.il/news/article/b1fqbrfrme" target="_blank" rel="noopener">"מפץ יהודי-ערבי" ב-ynet</a>,
+    <a href="https://www.maariv.co.il/news/politics/article-1350856" target="_blank" rel="noopener">"שלושת התנאים" במעריב</a>
+    ו<a href="https://x.com/itamarbengvir/status/2083125407679721584" target="_blank" rel="noopener">מתקפת בן גביר ב-X</a>.
+    נתונים מ־7 כלים עבריים + סריקות רשת וערבית/בינלאומי.
+    2026-08-01.
+  </p>
+
+  <div class="filterbar" id="filterbar">
+    <span class="label">סינון סנטימנט לפי אותנטיות:</span>
+    <div class="segbtns" role="group" aria-label="סינון אותנטיות">
+      <button type="button" data-mode="all" class="active">הכל</button>
+      <button type="button" data-mode="no_fake">בלי מתואם/מזויף</button>
+      <button type="button" data-mode="authentic_only">רק אותנטיים</button>
+    </div>
+    <div class="filter-meta" id="filterMeta">טוען…</div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi accent"><div class="n" id="kpiN">1,839</div><div class="t">פריטים בתצוגה (תגובות + מדגם X)</div></div>
+    <div class="kpi ok"><div class="n" id="kpiWarm">—</div><div class="t">% אוהד מתוך מזוהים</div></div>
+    <div class="kpi bad"><div class="n" id="kpiHostile">—</div><div class="t">% עוין מתוך מזוהים</div></div>
+    <div class="kpi warn"><div class="n" id="kpiRemoved">—</div><div class="t">מחוץ לסינון הנוכחי</div></div>
+  </div>
+
+  <section>
+    <h2>סנטימנט לפי זירה <span class="sub" id="sentimentModeHint">(הכל)</span></h2>
+    <div class="callout info">
+      בחרו סינון למעלה כדי לראות סנטימנט אחרי הסרת תנועה חשודה.
+      <b>"רק אותנטיים"</b> משאיר likely_authentic בלבד.
+      <a href="https://news.walla.co.il/item/3857568" target="_blank" rel="noopener">וואלה</a>
+      נושאת את עיקר סיכון התיאום (~31.4%).
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:#15803d"></span>אוהד</span>
+      <span><span class="dot" style="background:#94a3b8"></span>לא ברור</span>
+      <span><span class="dot" style="background:#b91c1c"></span>עוין</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>זירה</th><th>n</th><th>אוהד</th><th>עוין</th><th>לא ברור</th>
+          <th>% עוין*</th><th>% אוהד*</th><th>פילוח</th><th>Δ %עוין מול בסיס</th>
+        </tr>
+      </thead>
+      <tbody id="sentimentBody"></tbody>
+    </table>
+    <p class="sub">* מתוך תגובות בעלות עמדה מזוהה. Δ משווה לסינון "הכל" על אותו קורפוס מנותח.</p>
+  </section>
+
+  <section>
+    <h2>אותנטיות ותנועה מתואמת</h2>
+    <div class="legend">
+      <span><span class="dot" style="background:#15803d"></span>אותנטי</span>
+      <span><span class="dot" style="background:#ca8a04"></span>חשוד</span>
+      <span><span class="dot" style="background:#b91c1c"></span>מתואם/מזויף</span>
+      <span>רצועת חשד רחבה: <b>14.9%</b></span>
+    </div>
+    <div class="totalbar-wrap">
+      <div class="bar" style="height:18px"><div class="seg" style="width:85.10%;background:#15803d" title="אותנטי: 1,565"></div><div class="seg" style="width:5.76%;background:#ca8a04" title="חשוד: 106"></div><div class="seg" style="width:9.14%;background:#b91c1c" title="מתואם/מזויף: 168"></div></div>
+    </div>
+    <div class="kpis" style="margin-top:14px;margin-bottom:12px">
+      <div class="kpi accent"><div class="n">1,839</div><div class="t">פריטים בקורפוס המנותח</div></div>
+      <div class="kpi ok"><div class="n">85.1%</div><div class="t">אותנטיים (1,565)</div></div>
+      <div class="kpi warn"><div class="n">5.8%</div><div class="t">חשודים (106)</div></div>
+      <div class="kpi bad"><div class="n">9.1%</div><div class="t">מתואם / מזויף (168)</div></div>
+    </div>
+    <div class="callout bad">
+      <b>אומדן:</b> 9.1% מתואם/מזויף ·
+      המנוע העיקרי:
+      <a href="https://news.walla.co.il/item/3857568" target="_blank" rel="noopener"><b>וואלה 31.4%</b></a> ·
+      <a href="https://www.ynet.co.il/news/article/b1fqbrfrme" target="_blank" rel="noopener">ynet 3.3%</a> ·
+      ביטחון: medium for Walla duplication; low-medium for account-level bot claims elsewhere.
+      <div style="margin-top:6px;color:#9a3412">Walla exact-duplicate clusters dominate the fake/coordinated bucket; ynet/haaretz much cleaner on this metric.</div>
+    </div>
+    <table style="margin-top:14px">
+      <thead>
+        <tr>
+          <th>זירה</th><th>תגובות באתר</th><th>מנותח</th><th>אותנטי</th><th>חשוד</th>
+          <th>מתואם/מזויף</th><th>פילוח</th><th>לייקים אותנטיים</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="https://www.ynet.co.il/news/article/b1fqbrfrme" target="_blank" rel="noopener"><b>ynet</b></a><div class="sub">מרכז-שמאל</div></td>
+          <td class="num">996</td>
+          <td class="num">992</td>
+          <td class="num ok">94.0%</td>
+          <td class="num warn">2.7%</td>
+          <td class="num bad">3.3%</td>
+          <td class="barcell"><div class="bar" style="height:12px"><div class="seg" style="width:93.95%;background:#15803d" title="אותנטי: 932"></div><div class="seg" style="width:2.72%;background:#ca8a04" title="חשוד: 27"></div><div class="seg" style="width:3.33%;background:#b91c1c" title="מתואם/מזויף: 33"></div></div></td>
+          <td class="num">95.0%</td>
+        </tr>
+        <tr>
+          <td><a href="https://news.walla.co.il/item/3857568" target="_blank" rel="noopener"><b>וואלה</b></a><div class="sub">מיינסטרים</div></td>
+          <td class="num">387</td>
+          <td class="num">379</td>
+          <td class="num ok">49.9%</td>
+          <td class="num warn">18.7%</td>
+          <td class="num bad">31.4%</td>
+          <td class="barcell"><div class="bar" style="height:12px"><div class="seg" style="width:49.87%;background:#15803d" title="אותנטי: 189"></div><div class="seg" style="width:18.73%;background:#ca8a04" title="חשוד: 71"></div><div class="seg" style="width:31.40%;background:#b91c1c" title="מתואם/מזויף: 119"></div></div></td>
+          <td class="num">62.6%</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.haaretz.co.il/news/elections/2026-07-31/ty-article/.premium/0000019f-b780-d993-af9f-b7d7f0a70000" target="_blank" rel="noopener"><b>הארץ</b></a><div class="sub">שמאל</div></td>
+          <td class="num">284</td>
+          <td class="num">284</td>
+          <td class="num ok">98.9%</td>
+          <td class="num warn">0.0%</td>
+          <td class="num bad">1.1%</td>
+          <td class="barcell"><div class="bar" style="height:12px"><div class="seg" style="width:98.94%;background:#15803d" title="אותנטי: 281"></div><div class="seg" style="width:1.06%;background:#b91c1c" title="מתואם/מזויף: 3"></div></div></td>
+          <td class="num">98.9%</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.israelhayom.co.il/news/politics/article/19724787" target="_blank" rel="noopener"><b>ישראל היום</b></a><div class="sub">מרכז-ימין</div></td>
+          <td class="num">31</td>
+          <td class="num">31</td>
+          <td class="num ok">93.5%</td>
+          <td class="num warn">6.5%</td>
+          <td class="num bad">0.0%</td>
+          <td class="barcell"><div class="bar" style="height:12px"><div class="seg" style="width:93.55%;background:#15803d" title="אותנטי: 29"></div><div class="seg" style="width:6.45%;background:#ca8a04" title="חשוד: 2"></div></div></td>
+          <td class="num">98.4%</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.maariv.co.il/news/politics/article-1350856" target="_blank" rel="noopener"><b>מעריב</b></a><div class="sub">מיינסטרים / מרכז</div></td>
+          <td class="num">107</td>
+          <td class="num">107</td>
+          <td class="num ok">84.1%</td>
+          <td class="num warn">3.7%</td>
+          <td class="num bad">12.1%</td>
+          <td class="barcell"><div class="bar" style="height:12px"><div class="seg" style="width:84.11%;background:#15803d" title="אותנטי: 90"></div><div class="seg" style="width:3.74%;background:#ca8a04" title="חשוד: 4"></div><div class="seg" style="width:12.15%;background:#b91c1c" title="מתואם/מזויף: 13"></div></div></td>
+          <td class="num">87.9%</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.srugim.co.il/1290588" target="_blank" rel="noopener"><b>סרוגים</b></a><div class="sub">ציוני-דתי</div></td>
+          <td class="num">45</td>
+          <td class="num">35</td>
+          <td class="num ok">94.3%</td>
+          <td class="num warn">5.7%</td>
+          <td class="num bad">0.0%</td>
+          <td class="barcell"><div class="bar" style="height:12px"><div class="seg" style="width:94.29%;background:#15803d" title="אותנטי: 33"></div><div class="seg" style="width:5.71%;background:#ca8a04" title="חשוד: 2"></div></div></td>
+          <td class="num">100.0%</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.bhol.co.il/" target="_blank" rel="noopener"><b>בחדרי חרדים</b></a><div class="sub">חרדי</div></td>
+          <td class="num">11</td>
+          <td class="num">11</td>
+          <td class="num ok">100.0%</td>
+          <td class="num warn">0.0%</td>
+          <td class="num bad">0.0%</td>
+          <td class="barcell"><div class="bar" style="height:12px"><div class="seg" style="width:100.00%;background:#15803d" title="אותנטי: 11"></div></div></td>
+          <td class="num">100.0%</td>
+        </tr>
+        <tr>
+          <td><a href="https://x.com/itamarbengvir/status/2083125407679721584" target="_blank" rel="noopener"><b>X · שרשור בן גביר</b></a><div class="sub">רשת</div></td>
+          <td class="num">—</td>
+          <td class="num">15</td>
+          <td class="num ok">100.0%</td>
+          <td class="num warn">0.0%</td>
+          <td class="num bad">0.0%</td>
+          <td class="barcell"><div class="bar" style="height:12px"><div class="seg" style="width:100.00%;background:#15803d" title="אותנטי: 15"></div></div></td>
+          <td class="num">100.0%</td>
+        </tr></tbody>
+    </table>
+    <p class="sub" style="margin-top:8px">
+      "תגובות באתר" = מונה חי בכתבה המרכזית (כשזמין). "מנותח" = הקורפוס שעליו רצה ביקורת האותנטיות והסנטימנט.
+    </p>
+  </section>
+
+  <section>
+    <h2>רשתות — X ופייסבוק</h2>
+    <p class="sub" style="margin-top:-6px;margin-bottom:12px">
+      מקורות:
+      <a href="https://x.com/itamarbengvir/status/2083125407679721584" target="_blank" rel="noopener">פוסט בן גביר ב-X</a> ·
+      <a href="https://www.ynet.co.il/news/article/b1fqbrfrme" target="_blank" rel="noopener">"מפץ יהודי-ערבי" ב-ynet</a> ·
+      סגלוביץ׳:
+      <a href="https://www.facebook.com/YoavSegalovitz" target="_blank" rel="noopener">פייסבוק</a> /
+      <a href="https://x.com/YSegalovitz" target="_blank" rel="noopener">X</a>
+    </p>
+    <div class="soc-split">
+      <div class="soc-col">
+        <h3><span class="plat x">X</span> טוויטר — מספרים</h3>
+        <div class="xgrid"><div class="xcard"><div class="n">69,941</div><div class="t"><span class="plat x">X</span> צפיות ב<a href="https://x.com/itamarbengvir/status/2083125407679721584" target="_blank" rel="noopener">פוסט בן גביר</a></div></div><div class="xcard"><div class="n">772 / 251</div><div class="t"><span class="plat x">X</span> לייקים / תשובות לאותו פוסט</div><span class="hint"><a href="https://x.com/itamarbengvir/status/2083125407679721584" target="_blank" rel="noopener">פתיחת הפוסט</a></span></div><div class="xcard"><div class="n">4.57×</div><div class="t"><span class="plat x">X</span> יחס לייקים: 5 תשובות מובילות מול הפוסט</div><span class="hint">3,530 לייקים בתשובות · 772 בפוסט</span></div><div class="xcard"><div class="n">48.5%</div><div class="t"><span class="plat x">X</span> מהלייקים מחשבונות מוכרים (ח״כים / עיתונאים / חדשות)</div></div><div class="xcard"><div class="n">65.0%</div><div class="t"><span class="plat x">X</span> מהלייקים יושבים על 10% הפוסטים החזקים</div></div><div class="xcard"><div class="n">0.791</div><div class="t"><span class="plat x">X</span> מדד ריכוז לייקים (0 = שווה · 1 = אחד מקבל הכל)</div><span class="hint">n=81 פוסטים סביב הסיפור</span></div><div class="xcard"><div class="n">13.6%</div><div class="t"><span class="plat x">X</span> חשבונות עם שם שנראה אקראי (חשד לבוטים)</div><span class="hint">סף אזהרה: 15%</span></div><div class="xcard"><div class="n">0</div><div class="t"><span class="plat x">X</span> שיתופי קישורי כתבות ב-X (<a href="https://www.ynet.co.il/news/article/b1fqbrfrme" target="_blank" rel="noopener">ynet</a> / <a href="https://news.walla.co.il/item/3857568" target="_blank" rel="noopener">וואלה</a> / <a href="https://www.haaretz.co.il/news/elections/2026-07-31/ty-article/.premium/0000019f-b780-d993-af9f-b7d7f0a70000" target="_blank" rel="noopener">הארץ</a>)</div></div><div class="xcard"><div class="n">726</div><div class="t"><span class="plat x">X</span> לייקים לפוסטים שמצטטים <a href="https://www.ynet.co.il/news/article/b1fqbrfrme" target="_blank" rel="noopener">"מפץ יהודי-ערבי"</a></div><span class="hint">בעיקר @ynetalerts</span></div><div class="xcard"><div class="n">0</div><div class="t"><span class="plat x">X</span> אשכולות העתק-הדבק של אותו טקסט</div><span class="hint">0 = לא נמצא במדגם</span></div></div>
+      </div>
+      <div class="soc-col">
+        <h3><span class="plat fb">פייסבוק</span> מספרים</h3>
+        <div class="xgrid"><div class="xcard"><div class="n">56.8% / 43.2%</div><div class="t"><span class="plat fb">פייסבוק</span> תומך / מתנגד מתוך פוסטים עם עמדה ברורה</div><span class="hint">חיפוש + דפים רלוונטיים</span></div><div class="xcard"><div class="n">154</div><div class="t"><span class="plat fb">פייסבוק</span> פוסטים רלוונטיים במדגם</div></div><div class="xcard"><div class="n">4,430</div><div class="t"><span class="plat fb">פייסבוק</span> סה״כ לייקים נראים במדגם</div></div><div class="xcard"><div class="n">78.7%</div><div class="t"><span class="plat fb">פייסבוק</span> מהלייקים יושבים על 10% הפוסטים החזקים</div></div><div class="xcard"><div class="n">0.881</div><div class="t"><span class="plat fb">פייסבוק</span> מדד ריכוז לייקים (0 = שווה · 1 = אחד מקבל הכל)</div></div><div class="xcard"><div class="n">0</div><div class="t"><span class="plat fb">פייסבוק</span> פוסטים על רע״ם ב<a href="https://www.facebook.com/YoavSegalovitz" target="_blank" rel="noopener">דף סגלוביץ׳</a></div><span class="hint">הדף פעיל בנושאים אחרים; על החבירה — שקט</span></div><div class="xcard"><div class="n">21</div><div class="t"><span class="plat fb">פייסבוק</span> פוסטים בערבית במדגם</div></div><div class="xcard"><div class="n">0</div><div class="t"><span class="plat fb">פייסבוק</span> אשכולות העתק-הדבק של אותו טקסט</div><span class="hint">0 = לא נמצא במדגם</span></div></div>
+      </div>
+    </div>
+    <div class="callout ok" style="margin-top:14px">
+      <b>במילים פשוטות:</b>
+      ב-<span class="plat x">X</span> כמעט כל הרעש סובב סביב
+      <a href="https://x.com/itamarbengvir/status/2083125407679721584" target="_blank" rel="noopener">הפוסט של בן גביר</a>
+      (69,941 צפיות · 772 לייקים),
+      אבל 5 התשובות המובילות אוספות יחד 3,530 לייקים —
+      פי 4.57 מהפוסט עצמו. זו לא התפרצות המונית, אלא ויכוח בין קולות חזקים.
+      חשבונות עם שם אקראי: 13.6% (מתחת לסף 15%).
+      ב-<span class="plat fb">פייסבוק</span> השיח רץ בחיפושים ובשיתופים
+      (56.8% תומך / 43.2% מתנגד מתוך מזוהים);
+      ב<a href="https://www.facebook.com/YoavSegalovitz" target="_blank" rel="noopener">דף סגלוביץ׳</a> אין פוסט על רע״ם.
+      לא נמצא שיח ערבי חי על הסיפור ב-X.
+    </div>
+  </section>
+
+  <section>
+    <h2>אשכולות כפילות בולטים</h2>
+    <div class="dups">
+      
+            <div class="dup">
+              <div class="dup-h"><a href="https://www.ynet.co.il/news/article/b1fqbrfrme" target="_blank" rel="noopener"><b>ynet</b></a> · ×13 · 308 לייקים</div>
+              <div class="dup-t">“כל הכבוד”</div>
+            </div>
+            <div class="dup">
+              <div class="dup-h"><a href="https://www.ynet.co.il/news/article/b1fqbrfrme" target="_blank" rel="noopener"><b>ynet</b></a> · ×6 · 172 לייקים</div>
+              <div class="dup-t">“בהצלחה!”</div>
+            </div>
+            <div class="dup">
+              <div class="dup-h"><a href="https://www.ynet.co.il/news/article/b1fqbrfrme" target="_blank" rel="noopener"><b>ynet</b></a> · ×3 · 48 לייקים</div>
+              <div class="dup-t">“מהלך גאוני!!”</div>
+            </div>
+            <div class="dup">
+              <div class="dup-h"><a href="https://news.walla.co.il/item/3857568" target="_blank" rel="noopener"><b>וואלה</b></a> · ×8 · 6 לייקים</div>
+              <div class="dup-t">“הוא היה פעם שוטר הדגנרט הזה.”</div>
+            </div>
+            <div class="dup">
+              <div class="dup-h"><a href="https://news.walla.co.il/item/3857568" target="_blank" rel="noopener"><b>וואלה</b></a> · ×7 · 8 לייקים</div>
+              <div class="dup-t">“יואב סגלוביץ היה פאקינג מפכל משטרה?! מאיפה מביאים את כל ה0מאלנים ההזויים האלה שתופסים את כל מוקדי השלטון במדינה?”</div>
+            </div>
+            <div class="dup">
+              <div class="dup-h"><a href="https://news.walla.co.il/item/3857568" target="_blank" rel="noopener"><b>וואלה</b></a> · ×7 · 3 לייקים</div>
+              <div class="dup-t">“לא מבין מה יש לסגלוביץ לעזוב מפלגה שבסקרים עומדת על 17 מנדטים על מנת לעבור למפלגה שבספק תעבור את אחוז החסימה או שמא פייק הסקרים של מעריב הם פיקציה והמושחת יודע את המספרים האמיתיים ”</div>
+            </div>
+            <div class="dup">
+              <div class="dup-h"><a href="https://www.haaretz.co.il/news/elections/2026-07-31/ty-article/.premium/0000019f-b780-d993-af9f-b7d7f0a70000" target="_blank" rel="noopener"><b>הארץ</b></a> · ×3 · 65 לייקים</div>
+              <div class="dup-t">“מעולה”</div>
+            </div>
+            <div class="dup">
+              <div class="dup-h"><a href="https://www.maariv.co.il/news/politics/article-1350856" target="_blank" rel="noopener"><b>מעריב</b></a> · ×8 · 33 לייקים</div>
+              <div class="dup-t">“בראיון סוער שקיים יו"ר רע"ם, מנסור עבאס, עם אסתי פרז בתוכנית "בחצי היום" בכאן רשת ב' (ב-28 ביולי 2026), הוא סירב להשיב במישרין לשאלה האם חמאס הוא ארגון טרור שיש להשמידו”</div>
+            </div>
+            <div class="dup">
+              <div class="dup-h"><a href="https://www.maariv.co.il/news/politics/article-1350856" target="_blank" rel="noopener"><b>מעריב</b></a> · ×5 · 5 לייקים</div>
+              <div class="dup-t">“תגיד, ביבי שלך כבר התחייב לא לשתף מפלגות ערביות בממשלה? יש לו יכולת להקים ממשלה בלעדיהם? מבחינה זאת הוא בדיוק באותו מצב כמו מפלגות האופוזיציה”</div>
+            </div>
+    </div>
+    <div class="callout" style="margin-top:12px">
+      כפילויות ארוכות ב<a href="https://news.walla.co.il/item/3857568" target="_blank" rel="noopener">וואלה</a>
+      בלי שם מחבר = האות החזק ביותר לתיאום.
+      כפילויות קצרות ב<a href="https://www.ynet.co.il/news/article/b1fqbrfrme" target="_blank" rel="noopener">ynet</a>
+      ("כל הכבוד") יכולות להיות אורגניות.
+    </div>
+  </section>
+
+  <section>
+    <h2>מפת כיסוי תקשורתי</h2>
+    <div class="cov">
+      <div class="ccard">
+        <div class="n">7</div>
+        <div class="t">כלי עברית עם תגובות מנותחות</div>
+        <p class="sub" style="margin-top:8px">
+          <a href="https://www.haaretz.co.il/news/elections/2026-07-31/ty-article/.premium/0000019f-b780-d993-af9f-b7d7f0a70000" target="_blank" rel="noopener">הארץ</a> /
+          <a href="https://www.ynet.co.il/news/article/b1fqbrfrme" target="_blank" rel="noopener">ynet</a> אוהדים ·
+          <a href="https://news.walla.co.il/item/3857568" target="_blank" rel="noopener">וואלה</a>,
+          <a href="https://www.maariv.co.il/news/politics/article-1350856" target="_blank" rel="noopener">מעריב</a>,
+          <a href="https://www.israelhayom.co.il/news/politics/article/19724787" target="_blank" rel="noopener">ישראל היום</a>,
+          <a href="https://www.srugim.co.il/1290588" target="_blank" rel="noopener">סרוגים</a> ומטה עוינים.
+          השבר עובר בין שמאל למרכז.
+        </p>
+      </div>
+      <div class="ccard">
+        <div class="n">7</div>
+        <div class="t">כלים ערביים־ישראליים שנבדקו</div>
+        <p class="sub" style="margin-top:8px">
+          <span class="pill r">אין תגובות ציבוריות</span>
+          כיסוי קר/מוסדי —
+          <a href="https://bokra.net/Article-1600249" target="_blank" rel="noopener">בּוֹכּרָה</a>,
+          <a href="https://ashams.com/article/420464-baad-tk-ryr-aan-ndm-m-syg-loftsh-mnsor-aab-s-lmohd-trkz-l-n-aal-m-tmrh-laa-m-o-lth-lf-t-t-bhth-l-hk" target="_blank" rel="noopener">أش-شمس</a>.
+        </p>
+      </div>
+      <div class="ccard">
+        <div class="n">~10</div>
+        <div class="t">פריטי אנגלית/רוסית/ערבית אזורית</div>
+        <p class="sub" style="margin-top:8px">
+          בעיקר מהדורות ישראליות +
+          <a href="https://www.timesofisrael.com/in-major-shift-yesh-atid-mk-reportedly-set-to-run-as-no-2-in-mansour-abbass-raam-party/" target="_blank" rel="noopener">ToI</a>.
+          <a href="https://alittihad44.com/%D8%A7%D9%84%D8%AC%D9%85%D8%A7%D9%87%D9%8A%D8%B1-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9/news-2026-08-01-tiamtt" target="_blank" rel="noopener"><span class="pill r">الاتحاد</span></a>
+          — כיסוי פלסטיני עוין לתנאים.
+          אפס רויטרס/BBC/אל־ג׳זירה.
+        </p>
+      </div>
+    </div>
+    <h3>פריטים מרכזיים מחוץ לעברית</h3>
+    <table>
+      <thead><tr><th>כלי</th><th>שפה</th><th>מסגור</th><th>הערה</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><a href="https://www.timesofisrael.com/in-major-shift-yesh-atid-mk-reportedly-set-to-run-as-no-2-in-mansour-abbass-raam-party/" target="_blank" rel="noopener"><b>Times of Israel</b></a></td><td>EN</td>
+          <td><span class="pill a">גשר יהודי־ערבי</span></td>
+          <td>מקום 2; מסבך את קו בנט נגד מפלגות ערביות</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.haaretz.com/israel-news/israel-politics/2026-08-01/ty-article/.premium/united-arab-list-in-talks-with-yesh-atid-mk-to-join-party-slate-source-says/0000019f-bb38-d37f-adff-bfbc4f0b0000" target="_blank" rel="noopener"><b>Haaretz English</b></a></td><td>EN</td>
+          <td><span class="pill a">זהיר</span></td>
+          <td>מקור: מגעים מתקדמים; גשר פוליטי</td>
+        </tr>
+        <tr>
+          <td><a href="https://alittihad44.com/%D8%A7%D9%84%D8%AC%D9%85%D8%A7%D9%87%D9%8A%D8%B1-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9/news-2026-08-01-tiamtt" target="_blank" rel="noopener"><b>Al-Ittihad (الاتحاد)</b></a></td><td>AR</td>
+          <td><span class="pill r">עוין</span></td>
+          <td>מבוסס על
+            <a href="https://www.maariv.co.il/news/politics/article-1350856" target="_blank" rel="noopener">כתבת מעריב</a>
+            (שירות אזרחי / מדינה יהודית־דמוקרטית / טופ־3) — מסגור עוין</td>
+        </tr>
+        <tr>
+          <td><a href="https://www.i24news.tv/ar/%D8%A3%D8%AE%D8%A8%D8%A7%D8%B1/israeli-election-2026/artc-50ea5156" target="_blank" rel="noopener"><b>i24NEWS Arabic</b></a></td><td>AR</td>
+          <td><span class="pill a">ריכוך</span></td>
+          <td>מגעים נמשכים אך עדיין רחוקים מהסכם</td>
+        </tr>
+        <tr>
+          <td>
+            <a href="https://bokra.net/Article-1600249" target="_blank" rel="noopener"><b>בּוֹכּרָה</b></a> /
+            <a href="https://ashams.com/article/420464-baad-tk-ryr-aan-ndm-m-syg-loftsh-mnsor-aab-s-lmohd-trkz-l-n-aal-m-tmrh-laa-m-o-lth-lf-t-t-bhth-l-hk" target="_blank" rel="noopener"><b>أش-شمس</b></a>
+          </td><td>AR</td>
+          <td><span class="pill a">מוסדי</span></td>
+          <td>רע״ם: הוועידה קודם; מקורות: אין הסכם סופי</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout info" style="margin-top:12px">
+      <b>אותות רשמיים:</b> מג׳אדלה/N12 — אין הסכמות לחבירה עד אחרי פריימריז 22.8.
+      עבאס בערבית (עמית סגל) מצמצם שירות אזרחי להנהלה ערבית / מטרות ערביות.
+    </div>
+  </section>
+
+  <section>
+    <h2>הגיון סיווג האותנטיות</h2>
+    <p class="lede" style="margin-bottom:10px">
+      היוריסטיקה בסגנון CIB / BotSlayer — לא פסק־דין Botometer.
+      אין IP, device fingerprint או גרף חשבונות.
+    </p>
+    <ul class="compact"><li><code>exact_duplicate_x3+</code> — +40 → often likely_coordinated</li><li><code>duplicate_pair</code> — +20</li><li><code>generic_or_empty_name</code> — +8</li><li><code>random_alphanum_handle</code> — +12</li><li><code>ultra_short</code> — +15</li><li><code>slogan_stack_short</code> — +10</li><li><code>duplicated_and_liked</code> — +10</li><li><code>high_volume_author</code> — +10</li><li><code>thresholds</code> — >=45 likely_coordinated_or_fake; >=22 suspicious; else likely_authentic</li></ul>
+    <h3>מה זה לא אומר</h3>
+    <ul class="compact">
+      <li>Not a definitive bot verdict (no IP/device/graph API).</li><li>Not Cyabra/Botometer account-level scoring.</li><li>AI-written fluent Hebrew by humans or AI can evade these heuristics.</li>
+    </ul>
+  </section>
+
+  <footer>
+    מקורות: תגובות מ־6 כלים · <code>authenticity-audit.json</code> ·
+    <code>social_authed/deep/</code> · סריקות ערבית/בינלאומי ·
+    דוח מלא: <a href="דוח-מחקר-סגלוביץ-רעם.html">דוח מחקר</a> ·
+    <a href="06-ניתוח-רשתות-חברתיות-עמוק.md">ניתוח רשתות</a> ·
+    <a href="07-רסקאן-תקשורת-ערב.md">מפת כיסוי</a>
+  </footer>
+</div>
+
+<script id="data" type="application/json">{"records":[{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":0},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"w","l":3},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"w","l":1},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":1},{"c":"ynet","a":"a","s":"w","l":1},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"w","l":1},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"s","s":"w","l":2},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"w","l":1},{"c":"ynet","a":"a","s":"w","l":1},{"c":"ynet","a":"a","s":"w","l":1},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"w","l":4},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"w","l":3},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"w","l":6},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":4},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"w","l":1},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"f","s":"w","l":3},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"s","s":"w","l":3},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":6},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":116},{"c":"ynet","a":"a","s":"u","l":1172},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":16},{"c":"ynet","a":"a","s":"u","l":1653},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":21},{"c":"ynet","a":"a","s":"h","l":8},{"c":"ynet","a":"a","s":"h","l":14},{"c":"ynet","a":"a","s":"u","l":13},{"c":"ynet","a":"a","s":"u","l":32},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"w","l":906},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"a","s":"u","l":28},{"c":"ynet","a":"a","s":"h","l":12},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"w","l":11},{"c":"ynet","a":"a","s":"h","l":10},{"c":"ynet","a":"a","s":"u","l":18},{"c":"ynet","a":"a","s":"w","l":1876},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"u","l":15},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"u","l":11},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"w","l":4},{"c":"ynet","a":"a","s":"u","l":59},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"w","l":3},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":15},{"c":"ynet","a":"a","s":"u","l":21},{"c":"ynet","a":"a","s":"u","l":66},{"c":"ynet","a":"a","s":"u","l":14},{"c":"ynet","a":"a","s":"u","l":34},{"c":"ynet","a":"a","s":"u","l":38},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"u","l":8},{"c":"ynet","a":"a","s":"u","l":55},{"c":"ynet","a":"a","s":"u","l":21},{"c":"ynet","a":"a","s":"u","l":126},{"c":"ynet","a":"a","s":"u","l":136},{"c":"ynet","a":"a","s":"u","l":24},{"c":"ynet","a":"a","s":"u","l":48},{"c":"ynet","a":"s","s":"w","l":731},{"c":"ynet","a":"a","s":"u","l":1517},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"w","l":21},{"c":"ynet","a":"a","s":"h","l":4},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"w","l":1962},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"w","l":7},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"h","l":31},{"c":"ynet","a":"a","s":"h","l":7},{"c":"ynet","a":"a","s":"u","l":50},{"c":"ynet","a":"a","s":"h","l":48},{"c":"ynet","a":"a","s":"u","l":25},{"c":"ynet","a":"a","s":"h","l":22},{"c":"ynet","a":"a","s":"u","l":104},{"c":"ynet","a":"a","s":"u","l":41},{"c":"ynet","a":"a","s":"h","l":115},{"c":"ynet","a":"a","s":"h","l":30},{"c":"ynet","a":"a","s":"u","l":68},{"c":"ynet","a":"a","s":"u","l":147},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"w","l":4},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"h","l":3},{"c":"ynet","a":"a","s":"h","l":9},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"w","l":7},{"c":"ynet","a":"a","s":"u","l":8},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":15},{"c":"ynet","a":"a","s":"w","l":3},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"w","l":7},{"c":"ynet","a":"a","s":"u","l":8},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":8},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":8},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"a","s":"w","l":6},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"w","l":6},{"c":"ynet","a":"a","s":"w","l":0},{"c":"ynet","a":"s","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"s","s":"u","l":4},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"f","s":"w","l":8},{"c":"ynet","a":"a","s":"w","l":4},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"w","l":11},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"a","s":"u","l":8},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"f","s":"w","l":7},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":7},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"w","l":6},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"w","l":6},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"f","s":"w","l":6},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"s","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"f","s":"w","l":3},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"w","l":6},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":7},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"h","l":3},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"f","s":"w","l":11},{"c":"ynet","a":"f","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"f","s":"w","l":10},{"c":"ynet","a":"a","s":"w","l":13},{"c":"ynet","a":"a","s":"u","l":11},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"f","s":"w","l":13},{"c":"ynet","a":"a","s":"u","l":14},{"c":"ynet","a":"a","s":"w","l":14},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"w","l":1},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":13},{"c":"ynet","a":"a","s":"w","l":12},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"w","l":13},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"w","l":12},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"u","l":11},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":13},{"c":"ynet","a":"a","s":"h","l":7},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"f","s":"w","l":10},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":13},{"c":"ynet","a":"a","s":"u","l":13},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"w","l":11},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":11},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"u","l":8},{"c":"ynet","a":"a","s":"w","l":12},{"c":"ynet","a":"a","s":"w","l":12},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"w","l":7},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"h","l":8},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"u","l":8},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"w","l":6},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":8},{"c":"ynet","a":"a","s":"u","l":11},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":8},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"w","l":6},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":7},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":16},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"s","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":14},{"c":"ynet","a":"a","s":"w","l":7},{"c":"ynet","a":"a","s":"w","l":14},{"c":"ynet","a":"a","s":"w","l":7},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"s","s":"u","l":7},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"f","s":"w","l":7},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":4},{"c":"ynet","a":"a","s":"u","l":8},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"s","s":"w","l":5},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":13},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"u","l":13},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"a","s":"u","l":19},{"c":"ynet","a":"a","s":"w","l":16},{"c":"ynet","a":"f","s":"u","l":5},{"c":"ynet","a":"s","s":"u","l":2},{"c":"ynet","a":"a","s":"w","l":13},{"c":"ynet","a":"s","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":19},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"w","l":19},{"c":"ynet","a":"a","s":"w","l":24},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":20},{"c":"ynet","a":"f","s":"w","l":6},{"c":"ynet","a":"a","s":"w","l":9},{"c":"ynet","a":"a","s":"h","l":3},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"w","l":14},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"h","l":3},{"c":"ynet","a":"a","s":"w","l":17},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":15},{"c":"ynet","a":"a","s":"w","l":19},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":19},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"w","l":11},{"c":"ynet","a":"a","s":"w","l":8},{"c":"ynet","a":"a","s":"u","l":15},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"w","l":17},{"c":"ynet","a":"a","s":"w","l":12},{"c":"ynet","a":"a","s":"u","l":20},{"c":"ynet","a":"a","s":"u","l":22},{"c":"ynet","a":"a","s":"u","l":18},{"c":"ynet","a":"s","s":"u","l":13},{"c":"ynet","a":"a","s":"u","l":18},{"c":"ynet","a":"a","s":"w","l":16},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":18},{"c":"ynet","a":"a","s":"w","l":19},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"w","l":17},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":22},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":19},{"c":"ynet","a":"s","s":"u","l":11},{"c":"ynet","a":"a","s":"h","l":13},{"c":"ynet","a":"s","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":13},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"h","l":3},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"u","l":21},{"c":"ynet","a":"f","s":"w","l":16},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"w","l":5},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"w","l":18},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"w","l":19},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":23},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"w","l":20},{"c":"ynet","a":"a","s":"w","l":23},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":19},{"c":"ynet","a":"a","s":"w","l":15},{"c":"ynet","a":"f","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":23},{"c":"ynet","a":"a","s":"w","l":21},{"c":"ynet","a":"a","s":"u","l":22},{"c":"ynet","a":"a","s":"u","l":21},{"c":"ynet","a":"a","s":"u","l":23},{"c":"ynet","a":"a","s":"w","l":17},{"c":"ynet","a":"a","s":"w","l":18},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":17},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"w","l":20},{"c":"ynet","a":"a","s":"w","l":22},{"c":"ynet","a":"a","s":"w","l":22},{"c":"ynet","a":"a","s":"u","l":23},{"c":"ynet","a":"a","s":"h","l":4},{"c":"ynet","a":"a","s":"w","l":16},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"w","l":20},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"s","s":"u","l":4},{"c":"ynet","a":"f","s":"u","l":17},{"c":"ynet","a":"a","s":"w","l":19},{"c":"ynet","a":"a","s":"u","l":20},{"c":"ynet","a":"a","s":"h","l":20},{"c":"ynet","a":"a","s":"w","l":10},{"c":"ynet","a":"a","s":"w","l":23},{"c":"ynet","a":"a","s":"u","l":17},{"c":"ynet","a":"a","s":"w","l":21},{"c":"ynet","a":"a","s":"u","l":20},{"c":"ynet","a":"a","s":"w","l":29},{"c":"ynet","a":"a","s":"w","l":20},{"c":"ynet","a":"a","s":"u","l":19},{"c":"ynet","a":"a","s":"w","l":31},{"c":"ynet","a":"a","s":"w","l":41},{"c":"ynet","a":"a","s":"u","l":19},{"c":"ynet","a":"a","s":"u","l":27},{"c":"ynet","a":"a","s":"u","l":29},{"c":"ynet","a":"a","s":"u","l":20},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"f","s":"w","l":21},{"c":"ynet","a":"a","s":"w","l":21},{"c":"ynet","a":"a","s":"u","l":21},{"c":"ynet","a":"a","s":"u","l":19},{"c":"ynet","a":"a","s":"w","l":0},{"c":"ynet","a":"a","s":"u","l":15},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":18},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"w","l":20},{"c":"ynet","a":"a","s":"w","l":22},{"c":"ynet","a":"a","s":"u","l":26},{"c":"ynet","a":"a","s":"u","l":32},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":20},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"w","l":16},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":18},{"c":"ynet","a":"a","s":"w","l":21},{"c":"ynet","a":"a","s":"u","l":17},{"c":"ynet","a":"a","s":"u","l":29},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"w","l":18},{"c":"ynet","a":"a","s":"h","l":3},{"c":"ynet","a":"a","s":"w","l":20},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":25},{"c":"ynet","a":"a","s":"u","l":26},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":22},{"c":"ynet","a":"a","s":"w","l":19},{"c":"ynet","a":"f","s":"u","l":24},{"c":"ynet","a":"a","s":"w","l":27},{"c":"ynet","a":"a","s":"w","l":20},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":58},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"w","l":36},{"c":"ynet","a":"a","s":"u","l":31},{"c":"ynet","a":"a","s":"u","l":25},{"c":"ynet","a":"a","s":"u","l":21},{"c":"ynet","a":"a","s":"u","l":15},{"c":"ynet","a":"a","s":"u","l":20},{"c":"ynet","a":"s","s":"u","l":21},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"w","l":34},{"c":"ynet","a":"a","s":"u","l":33},{"c":"ynet","a":"a","s":"w","l":21},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":34},{"c":"ynet","a":"a","s":"w","l":20},{"c":"ynet","a":"a","s":"u","l":21},{"c":"ynet","a":"a","s":"w","l":24},{"c":"ynet","a":"a","s":"u","l":24},{"c":"ynet","a":"a","s":"u","l":20},{"c":"ynet","a":"a","s":"h","l":21},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":24},{"c":"ynet","a":"a","s":"h","l":70},{"c":"ynet","a":"a","s":"w","l":82},{"c":"ynet","a":"a","s":"w","l":55},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":19},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"w","l":61},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":8},{"c":"ynet","a":"a","s":"u","l":59},{"c":"ynet","a":"a","s":"w","l":17},{"c":"ynet","a":"f","s":"w","l":31},{"c":"ynet","a":"a","s":"w","l":29},{"c":"ynet","a":"a","s":"u","l":18},{"c":"ynet","a":"a","s":"w","l":43},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":17},{"c":"ynet","a":"a","s":"u","l":19},{"c":"ynet","a":"a","s":"w","l":26},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"s","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":18},{"c":"ynet","a":"a","s":"w","l":23},{"c":"ynet","a":"a","s":"u","l":25},{"c":"ynet","a":"a","s":"u","l":56},{"c":"ynet","a":"a","s":"u","l":18},{"c":"ynet","a":"a","s":"w","l":19},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"w","l":29},{"c":"ynet","a":"a","s":"w","l":20},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"w","l":41},{"c":"ynet","a":"a","s":"w","l":25},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"w","l":26},{"c":"ynet","a":"a","s":"w","l":31},{"c":"ynet","a":"a","s":"u","l":25},{"c":"ynet","a":"a","s":"w","l":24},{"c":"ynet","a":"s","s":"h","l":3},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"w","l":24},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"u","l":33},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":33},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":27},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":21},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"w","l":32},{"c":"ynet","a":"a","s":"u","l":32},{"c":"ynet","a":"a","s":"u","l":29},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"w","l":21},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"f","s":"w","l":22},{"c":"ynet","a":"f","s":"w","l":21},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"u","l":21},{"c":"ynet","a":"a","s":"w","l":36},{"c":"ynet","a":"a","s":"w","l":62},{"c":"ynet","a":"a","s":"w","l":34},{"c":"ynet","a":"a","s":"h","l":15},{"c":"ynet","a":"f","s":"u","l":2},{"c":"ynet","a":"a","s":"w","l":38},{"c":"ynet","a":"a","s":"w","l":55},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"u","l":22},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":66},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"w","l":23},{"c":"ynet","a":"a","s":"w","l":25},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"h","l":5},{"c":"ynet","a":"a","s":"u","l":19},{"c":"ynet","a":"a","s":"u","l":24},{"c":"ynet","a":"a","s":"u","l":34},{"c":"ynet","a":"a","s":"w","l":64},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"h","l":20},{"c":"ynet","a":"a","s":"u","l":11},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":73},{"c":"ynet","a":"a","s":"w","l":29},{"c":"ynet","a":"a","s":"w","l":37},{"c":"ynet","a":"a","s":"w","l":38},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":25},{"c":"ynet","a":"a","s":"u","l":20},{"c":"ynet","a":"a","s":"u","l":13},{"c":"ynet","a":"a","s":"h","l":5},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"h","l":4},{"c":"ynet","a":"a","s":"w","l":42},{"c":"ynet","a":"a","s":"w","l":72},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"w","l":24},{"c":"ynet","a":"f","s":"w","l":28},{"c":"ynet","a":"a","s":"u","l":23},{"c":"ynet","a":"a","s":"u","l":33},{"c":"ynet","a":"a","s":"u","l":61},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"f","s":"w","l":27},{"c":"ynet","a":"a","s":"u","l":18},{"c":"ynet","a":"a","s":"u","l":38},{"c":"ynet","a":"a","s":"h","l":1},{"c":"ynet","a":"a","s":"u","l":28},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"h","l":6},{"c":"ynet","a":"a","s":"w","l":97},{"c":"ynet","a":"a","s":"u","l":86},{"c":"ynet","a":"a","s":"u","l":98},{"c":"ynet","a":"a","s":"w","l":24},{"c":"ynet","a":"a","s":"w","l":66},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"u","l":22},{"c":"ynet","a":"a","s":"u","l":67},{"c":"ynet","a":"a","s":"w","l":120},{"c":"ynet","a":"f","s":"w","l":68},{"c":"ynet","a":"a","s":"w","l":43},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":15},{"c":"ynet","a":"a","s":"w","l":64},{"c":"ynet","a":"a","s":"u","l":137},{"c":"ynet","a":"a","s":"u","l":75},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"h","l":4},{"c":"ynet","a":"a","s":"u","l":61},{"c":"ynet","a":"s","s":"u","l":19},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":13},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":28},{"c":"ynet","a":"a","s":"w","l":72},{"c":"ynet","a":"a","s":"h","l":3},{"c":"ynet","a":"a","s":"h","l":3},{"c":"ynet","a":"a","s":"u","l":156},{"c":"ynet","a":"s","s":"u","l":19},{"c":"ynet","a":"a","s":"h","l":4},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":63},{"c":"ynet","a":"a","s":"w","l":60},{"c":"ynet","a":"a","s":"u","l":69},{"c":"ynet","a":"a","s":"u","l":35},{"c":"ynet","a":"s","s":"u","l":18},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"w","l":90},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":110},{"c":"ynet","a":"f","s":"w","l":57},{"c":"ynet","a":"a","s":"u","l":63},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"w","l":16},{"c":"ynet","a":"a","s":"w","l":63},{"c":"ynet","a":"f","s":"w","l":33},{"c":"ynet","a":"s","s":"w","l":24},{"c":"ynet","a":"a","s":"u","l":40},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"w","l":22},{"c":"ynet","a":"a","s":"w","l":42},{"c":"ynet","a":"a","s":"u","l":35},{"c":"ynet","a":"a","s":"w","l":42},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"w","l":23},{"c":"ynet","a":"a","s":"w","l":83},{"c":"ynet","a":"a","s":"u","l":29},{"c":"ynet","a":"a","s":"h","l":5},{"c":"ynet","a":"a","s":"h","l":5},{"c":"ynet","a":"a","s":"h","l":8},{"c":"ynet","a":"a","s":"h","l":42},{"c":"ynet","a":"a","s":"w","l":68},{"c":"ynet","a":"a","s":"u","l":24},{"c":"ynet","a":"f","s":"w","l":19},{"c":"ynet","a":"a","s":"h","l":5},{"c":"ynet","a":"a","s":"h","l":4},{"c":"ynet","a":"a","s":"w","l":34},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":90},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"u","l":144},{"c":"ynet","a":"a","s":"u","l":2},{"c":"ynet","a":"a","s":"u","l":93},{"c":"ynet","a":"a","s":"u","l":96},{"c":"ynet","a":"s","s":"u","l":56},{"c":"ynet","a":"a","s":"u","l":30},{"c":"ynet","a":"a","s":"w","l":117},{"c":"ynet","a":"a","s":"u","l":75},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"w","l":121},{"c":"ynet","a":"a","s":"w","l":183},{"c":"ynet","a":"a","s":"u","l":90},{"c":"ynet","a":"a","s":"w","l":111},{"c":"ynet","a":"a","s":"w","l":176},{"c":"ynet","a":"a","s":"u","l":106},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"w","l":143},{"c":"ynet","a":"a","s":"u","l":1},{"c":"ynet","a":"a","s":"h","l":6},{"c":"ynet","a":"a","s":"w","l":88},{"c":"ynet","a":"f","s":"w","l":104},{"c":"ynet","a":"a","s":"h","l":6},{"c":"ynet","a":"a","s":"h","l":10},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"u","l":18},{"c":"ynet","a":"a","s":"w","l":167},{"c":"ynet","a":"a","s":"w","l":163},{"c":"ynet","a":"a","s":"w","l":133},{"c":"ynet","a":"a","s":"w","l":231},{"c":"ynet","a":"a","s":"u","l":202},{"c":"ynet","a":"a","s":"h","l":3},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"w","l":126},{"c":"ynet","a":"a","s":"w","l":489},{"c":"ynet","a":"a","s":"w","l":16},{"c":"ynet","a":"a","s":"w","l":116},{"c":"ynet","a":"a","s":"u","l":199},{"c":"ynet","a":"a","s":"w","l":112},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"u","l":19},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"h","l":6},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"h","l":6},{"c":"ynet","a":"a","s":"h","l":4},{"c":"ynet","a":"a","s":"u","l":137},{"c":"ynet","a":"a","s":"w","l":247},{"c":"ynet","a":"a","s":"w","l":156},{"c":"ynet","a":"a","s":"h","l":2},{"c":"ynet","a":"a","s":"u","l":6},{"c":"ynet","a":"a","s":"w","l":298},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":11},{"c":"ynet","a":"a","s":"h","l":23},{"c":"ynet","a":"a","s":"w","l":35},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"s","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"u","l":153},{"c":"ynet","a":"a","s":"h","l":6},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"w","l":430},{"c":"ynet","a":"a","s":"w","l":141},{"c":"ynet","a":"a","s":"u","l":684},{"c":"ynet","a":"a","s":"h","l":0},{"c":"ynet","a":"a","s":"u","l":55},{"c":"ynet","a":"a","s":"u","l":4},{"c":"ynet","a":"a","s":"h","l":7},{"c":"ynet","a":"a","s":"w","l":318},{"c":"ynet","a":"a","s":"h","l":5},{"c":"ynet","a":"a","s":"u","l":263},{"c":"ynet","a":"a","s":"h","l":5},{"c":"ynet","a":"a","s":"u","l":229},{"c":"ynet","a":"a","s":"u","l":184},{"c":"ynet","a":"a","s":"h","l":6},{"c":"ynet","a":"a","s":"h","l":7},{"c":"ynet","a":"a","s":"u","l":10},{"c":"ynet","a":"s","s":"w","l":299},{"c":"ynet","a":"s","s":"u","l":14},{"c":"ynet","a":"a","s":"w","l":458},{"c":"ynet","a":"a","s":"w","l":298},{"c":"ynet","a":"a","s":"u","l":595},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"w","l":335},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":217},{"c":"ynet","a":"a","s":"w","l":443},{"c":"ynet","a":"a","s":"h","l":8},{"c":"ynet","a":"a","s":"w","l":641},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"u","l":15},{"c":"ynet","a":"a","s":"u","l":440},{"c":"ynet","a":"a","s":"u","l":12},{"c":"ynet","a":"a","s":"w","l":680},{"c":"ynet","a":"a","s":"u","l":535},{"c":"ynet","a":"a","s":"u","l":39},{"c":"ynet","a":"a","s":"w","l":1416},{"c":"ynet","a":"a","s":"u","l":16},{"c":"ynet","a":"a","s":"u","l":29},{"c":"ynet","a":"a","s":"u","l":14},{"c":"ynet","a":"a","s":"w","l":1132},{"c":"ynet","a":"a","s":"u","l":0},{"c":"ynet","a":"a","s":"w","l":39},{"c":"ynet","a":"a","s":"h","l":32},{"c":"ynet","a":"a","s":"u","l":3},{"c":"ynet","a":"a","s":"h","l":7},{"c":"ynet","a":"a","s":"u","l":340},{"c":"ynet","a":"a","s":"w","l":448},{"c":"ynet","a":"a","s":"w","l":1064},{"c":"ynet","a":"a","s":"w","l":7},{"c":"ynet","a":"a","s":"w","l":6},{"c":"ynet","a":"a","s":"h","l":38},{"c":"ynet","a":"a","s":"u","l":18},{"c":"ynet","a":"a","s":"u","l":7},{"c":"ynet","a":"a","s":"w","l":611},{"c":"ynet","a":"a","s":"u","l":786},{"c":"ynet","a":"a","s":"w","l":1105},{"c":"ynet","a":"s","s":"w","l":69},{"c":"ynet","a":"a","s":"u","l":819},{"c":"ynet","a":"a","s":"w","l":2},{"c":"ynet","a":"f","s":"w","l":7},{"c":"ynet","a":"a","s":"u","l":5},{"c":"ynet","a":"a","s":"u","l":9},{"c":"ynet","a":"a","s":"h","l":14},{"c":"ynet","a":"a","s":"u","l":60},{"c":"ynet","a":"a","s":"u","l":34},{"c":"ynet","a":"a","s":"w","l":80},{"c":"ynet","a":"f","s":"u","l":43},{"c":"ynet","a":"f","s":"u","l":58},{"c":"ynet","a":"f","s":"w","l":68},{"c":"walla","a":"a","s":"h","l":0},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":4},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"h","l":1},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"h","l":0},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"w","l":3},{"c":"walla","a":"a","s":"u","l":6},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"h","l":3},{"c":"walla","a":"a","s":"w","l":3},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"w","l":2},{"c":"walla","a":"a","s":"w","l":2},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"h","l":1},{"c":"walla","a":"a","s":"u","l":3},{"c":"walla","a":"a","s":"u","l":3},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"s","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"s","s":"u","l":1},{"c":"walla","a":"a","s":"h","l":4},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"h","l":5},{"c":"walla","a":"s","s":"u","l":1},{"c":"walla","a":"a","s":"h","l":5},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"h","l":4},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"h","l":3},{"c":"walla","a":"a","s":"h","l":3},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"h","l":3},{"c":"walla","a":"a","s":"u","l":4},{"c":"walla","a":"a","s":"u","l":5},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"u","l":5},{"c":"walla","a":"a","s":"h","l":3},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":5},{"c":"walla","a":"a","s":"u","l":5},{"c":"walla","a":"a","s":"h","l":0},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"h","l":3},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"h","l":1},{"c":"walla","a":"a","s":"u","l":3},{"c":"walla","a":"a","s":"h","l":5},{"c":"walla","a":"a","s":"h","l":1},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"h","l":4},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":3},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"h","l":1},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"w","l":4},{"c":"walla","a":"a","s":"h","l":9},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"w","l":4},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":7},{"c":"walla","a":"s","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"f","s":"h","l":4},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":7},{"c":"walla","a":"f","s":"h","l":2},{"c":"walla","a":"a","s":"h","l":1},{"c":"walla","a":"f","s":"u","l":2},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":2},{"c":"walla","a":"f","s":"u","l":4},{"c":"walla","a":"a","s":"h","l":0},{"c":"walla","a":"s","s":"w","l":0},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"s","s":"h","l":3},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"s","s":"u","l":4},{"c":"walla","a":"a","s":"h","l":1},{"c":"walla","a":"s","s":"h","l":0},{"c":"walla","a":"a","s":"h","l":0},{"c":"walla","a":"s","s":"h","l":1},{"c":"walla","a":"s","s":"u","l":2},{"c":"walla","a":"s","s":"w","l":0},{"c":"walla","a":"s","s":"u","l":1},{"c":"walla","a":"s","s":"h","l":2},{"c":"walla","a":"s","s":"w","l":1},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"s","s":"w","l":1},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"s","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"s","s":"h","l":0},{"c":"walla","a":"s","s":"u","l":1},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"s","s":"h","l":0},{"c":"walla","a":"s","s":"h","l":0},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"s","s":"w","l":0},{"c":"walla","a":"s","s":"h","l":0},{"c":"walla","a":"s","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"s","s":"w","l":0},{"c":"walla","a":"s","s":"w","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"s","s":"h","l":0},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"a","s":"h","l":0},{"c":"walla","a":"s","s":"h","l":0},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"s","s":"h","l":0},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"s","s":"h","l":1},{"c":"walla","a":"s","s":"w","l":0},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"s","s":"w","l":3},{"c":"walla","a":"s","s":"h","l":3},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"s","s":"u","l":3},{"c":"walla","a":"s","s":"w","l":3},{"c":"walla","a":"f","s":"h","l":6},{"c":"walla","a":"a","s":"h","l":0},{"c":"walla","a":"a","s":"u","l":3},{"c":"walla","a":"f","s":"h","l":4},{"c":"walla","a":"f","s":"u","l":4},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":3},{"c":"walla","a":"f","s":"u","l":6},{"c":"walla","a":"s","s":"w","l":0},{"c":"walla","a":"s","s":"u","l":1},{"c":"walla","a":"s","s":"h","l":6},{"c":"walla","a":"s","s":"u","l":1},{"c":"walla","a":"s","s":"h","l":3},{"c":"walla","a":"s","s":"u","l":10},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"s","s":"h","l":7},{"c":"walla","a":"s","s":"h","l":5},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"s","s":"w","l":11},{"c":"walla","a":"a","s":"u","l":3},{"c":"walla","a":"s","s":"h","l":10},{"c":"walla","a":"s","s":"u","l":10},{"c":"walla","a":"s","s":"h","l":6},{"c":"walla","a":"s","s":"w","l":7},{"c":"walla","a":"s","s":"w","l":2},{"c":"walla","a":"s","s":"h","l":8},{"c":"walla","a":"s","s":"u","l":5},{"c":"walla","a":"f","s":"u","l":8},{"c":"walla","a":"f","s":"u","l":2},{"c":"walla","a":"f","s":"h","l":6},{"c":"walla","a":"f","s":"u","l":2},{"c":"walla","a":"f","s":"h","l":6},{"c":"walla","a":"s","s":"u","l":5},{"c":"walla","a":"f","s":"h","l":5},{"c":"walla","a":"f","s":"h","l":6},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":5},{"c":"walla","a":"f","s":"u","l":5},{"c":"walla","a":"f","s":"u","l":3},{"c":"walla","a":"f","s":"h","l":3},{"c":"walla","a":"s","s":"u","l":2},{"c":"walla","a":"f","s":"w","l":3},{"c":"walla","a":"f","s":"h","l":4},{"c":"walla","a":"f","s":"h","l":1},{"c":"walla","a":"f","s":"h","l":1},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":4},{"c":"walla","a":"f","s":"h","l":3},{"c":"walla","a":"f","s":"u","l":3},{"c":"walla","a":"f","s":"h","l":2},{"c":"walla","a":"f","s":"u","l":2},{"c":"walla","a":"f","s":"u","l":2},{"c":"walla","a":"f","s":"h","l":1},{"c":"walla","a":"f","s":"h","l":1},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"w","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"w","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"w","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":1},{"c":"walla","a":"a","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":1},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":1},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"s","s":"u","l":1},{"c":"walla","a":"f","s":"w","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"h","l":1},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"w","l":0},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":1},{"c":"walla","a":"f","s":"u","l":3},{"c":"walla","a":"f","s":"u","l":0},{"c":"walla","a":"s","s":"u","l":0},{"c":"walla","a":"f","s":"h","l":3},{"c":"walla","a":"f","s":"w","l":2},{"c":"walla","a":"f","s":"h","l":1},{"c":"walla","a":"f","s":"h","l":0},{"c":"walla","a":"f","s":"u","l":1},{"c":"walla","a":"f","s":"h","l":1},{"c":"walla","a":"f","s":"h","l":1},{"c":"walla","a":"f","s":"u","l":2},{"c":"walla","a":"f","s":"u","l":1},{"c":"walla","a":"f","s":"u","l":1},{"c":"walla","a":"f","s":"u","l":3},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":4},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":3},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"w","l":2},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":3},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"s","s":"h","l":3},{"c":"walla","a":"a","s":"u","l":4},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"u","l":3},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"h","l":5},{"c":"walla","a":"a","s":"w","l":1},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"h","l":1},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"h","l":3},{"c":"walla","a":"a","s":"h","l":3},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"h","l":6},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"h","l":13},{"c":"walla","a":"a","s":"h","l":17},{"c":"walla","a":"a","s":"h","l":7},{"c":"walla","a":"a","s":"h","l":3},{"c":"walla","a":"a","s":"h","l":1},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":6},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":4},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"h","l":5},{"c":"walla","a":"a","s":"u","l":6},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"h","l":7},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"h","l":10},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":7},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"s","s":"h","l":6},{"c":"walla","a":"a","s":"u","l":7},{"c":"walla","a":"a","s":"h","l":6},{"c":"walla","a":"a","s":"h","l":8},{"c":"walla","a":"a","s":"h","l":12},{"c":"walla","a":"a","s":"h","l":8},{"c":"walla","a":"a","s":"h","l":6},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"w","l":7},{"c":"walla","a":"a","s":"u","l":0},{"c":"walla","a":"a","s":"h","l":6},{"c":"walla","a":"a","s":"w","l":8},{"c":"walla","a":"a","s":"h","l":0},{"c":"walla","a":"a","s":"h","l":2},{"c":"walla","a":"a","s":"h","l":3},{"c":"walla","a":"a","s":"w","l":8},{"c":"walla","a":"a","s":"u","l":2},{"c":"walla","a":"a","s":"u","l":1},{"c":"walla","a":"a","s":"u","l":3},{"c":"walla","a":"a","s":"u","l":6},{"c":"walla","a":"a","s":"u","l":2},{"c":"haaretz","a":"a","s":"w","l":1},{"c":"haaretz","a":"a","s":"w","l":0},{"c":"haaretz","a":"a","s":"h","l":0},{"c":"haaretz","a":"a","s":"h","l":5},{"c":"haaretz","a":"a","s":"u","l":1},{"c":"haaretz","a":"a","s":"w","l":4},{"c":"haaretz","a":"a","s":"u","l":9},{"c":"haaretz","a":"a","s":"w","l":1},{"c":"haaretz","a":"a","s":"u","l":6},{"c":"haaretz","a":"a","s":"u","l":1},{"c":"haaretz","a":"a","s":"u","l":5},{"c":"haaretz","a":"a","s":"w","l":2},{"c":"haaretz","a":"a","s":"u","l":4},{"c":"haaretz","a":"a","s":"w","l":25},{"c":"haaretz","a":"a","s":"w","l":7},{"c":"haaretz","a":"a","s":"w","l":14},{"c":"haaretz","a":"a","s":"u","l":4},{"c":"haaretz","a":"a","s":"u","l":2},{"c":"haaretz","a":"a","s":"u","l":14},{"c":"haaretz","a":"a","s":"u","l":12},{"c":"haaretz","a":"a","s":"u","l":6},{"c":"haaretz","a":"a","s":"u","l":16},{"c":"haaretz","a":"a","s":"u","l":10},{"c":"haaretz","a":"a","s":"u","l":25},{"c":"haaretz","a":"a","s":"u","l":0},{"c":"haaretz","a":"a","s":"w","l":7},{"c":"haaretz","a":"a","s":"u","l":0},{"c":"haaretz","a":"a","s":"u","l":17},{"c":"haaretz","a":"a","s":"w","l":19},{"c":"haaretz","a":"a","s":"u","l":23},{"c":"haaretz","a":"a","s":"u","l":21},{"c":"haaretz","a":"a","s":"u","l":11},{"c":"haaretz","a":"a","s":"u","l":16},{"c":"haaretz","a":"a","s":"u","l":3},{"c":"haaretz","a":"a","s":"u","l":8},{"c":"haaretz","a":"a","s":"w","l":16},{"c":"haaretz","a":"a","s":"u","l":15},{"c":"haaretz","a":"a","s":"w","l":18},{"c":"haaretz","a":"a","s":"u","l":6},{"c":"haaretz","a":"f","s":"u","l":9},{"c":"haaretz","a":"a","s":"w","l":18},{"c":"haaretz","a":"a","s":"u","l":1},{"c":"haaretz","a":"a","s":"w","l":25},{"c":"haaretz","a":"a","s":"u","l":27},{"c":"haaretz","a":"a","s":"h","l":20},{"c":"haaretz","a":"a","s":"w","l":0},{"c":"haaretz","a":"a","s":"u","l":21},{"c":"haaretz","a":"a","s":"u","l":16},{"c":"haaretz","a":"a","s":"u","l":3},{"c":"haaretz","a":"a","s":"w","l":21},{"c":"haaretz","a":"a","s":"u","l":24},{"c":"haaretz","a":"a","s":"u","l":20},{"c":"haaretz","a":"a","s":"w","l":15},{"c":"haaretz","a":"a","s":"u","l":16},{"c":"haaretz","a":"a","s":"w","l":17},{"c":"haaretz","a":"a","s":"w","l":6},{"c":"haaretz","a":"a","s":"u","l":32},{"c":"haaretz","a":"a","s":"h","l":6},{"c":"haaretz","a":"a","s":"w","l":50},{"c":"haaretz","a":"a","s":"u","l":6},{"c":"haaretz","a":"a","s":"u","l":25},{"c":"haaretz","a":"a","s":"w","l":26},{"c":"haaretz","a":"a","s":"w","l":34},{"c":"haaretz","a":"a","s":"w","l":4},{"c":"haaretz","a":"a","s":"u","l":17},{"c":"haaretz","a":"a","s":"h","l":21},{"c":"haaretz","a":"a","s":"u","l":8},{"c":"haaretz","a":"a","s":"u","l":16},{"c":"haaretz","a":"a","s":"u","l":4},{"c":"haaretz","a":"a","s":"u","l":5},{"c":"haaretz","a":"a","s":"u","l":6},{"c":"haaretz","a":"a","s":"w","l":23},{"c":"haaretz","a":"a","s":"u","l":27},{"c":"haaretz","a":"a","s":"u","l":1},{"c":"haaretz","a":"a","s":"u","l":35},{"c":"haaretz","a":"a","s":"u","l":2},{"c":"haaretz","a":"f","s":"u","l":29},{"c":"haaretz","a":"a","s":"u","l":37},{"c":"haaretz","a":"a","s":"w","l":25},{"c":"haaretz","a":"a","s":"u","l":30},{"c":"haaretz","a":"a","s":"w","l":33},{"c":"haaretz","a":"a","s":"u","l":32},{"c":"haaretz","a":"a","s":"u","l":21},{"c":"haaretz","a":"a","s":"w","l":33},{"c":"haaretz","a":"a","s":"u","l":2},{"c":"haaretz","a":"a","s":"w","l":6},{"c":"haaretz","a":"a","s":"u","l":31},{"c":"haaretz","a":"a","s":"u","l":2},{"c":"haaretz","a":"a","s":"u","l":7},{"c":"haaretz","a":"a","s":"w","l":28},{"c":"haaretz","a":"a","s":"w","l":33},{"c":"haaretz","a":"a","s":"u","l":46},{"c":"haaretz","a":"a","s":"w","l":12},{"c":"haaretz","a":"a","s":"w","l":27},{"c":"haaretz","a":"a","s":"w","l":35},{"c":"haaretz","a":"a","s":"u","l":24},{"c":"haaretz","a":"a","s":"w","l":24},{"c":"haaretz","a":"a","s":"w","l":28},{"c":"haaretz","a":"a","s":"u","l":0},{"c":"haaretz","a":"a","s":"u","l":8},{"c":"haaretz","a":"a","s":"u","l":14},{"c":"haaretz","a":"a","s":"u","l":3},{"c":"haaretz","a":"a","s":"u","l":5},{"c":"haaretz","a":"a","s":"u","l":23},{"c":"haaretz","a":"a","s":"w","l":34},{"c":"haaretz","a":"a","s":"u","l":3},{"c":"haaretz","a":"a","s":"u","l":20},{"c":"haaretz","a":"a","s":"u","l":32},{"c":"haaretz","a":"a","s":"u","l":7},{"c":"haaretz","a":"a","s":"w","l":15},{"c":"haaretz","a":"a","s":"u","l":22},{"c":"haaretz","a":"a","s":"u","l":28},{"c":"haaretz","a":"a","s":"w","l":34},{"c":"haaretz","a":"a","s":"u","l":33},{"c":"haaretz","a":"a","s":"u","l":1},{"c":"haaretz","a":"a","s":"u","l":28},{"c":"haaretz","a":"a","s":"h","l":1},{"c":"haaretz","a":"a","s":"u","l":5},{"c":"haaretz","a":"a","s":"w","l":37},{"c":"haaretz","a":"a","s":"u","l":9},{"c":"haaretz","a":"a","s":"w","l":31},{"c":"haaretz","a":"a","s":"u","l":16},{"c":"haaretz","a":"a","s":"u","l":31},{"c":"haaretz","a":"a","s":"w","l":36},{"c":"haaretz","a":"a","s":"u","l":1},{"c":"haaretz","a":"a","s":"w","l":2},{"c":"haaretz","a":"a","s":"u","l":0},{"c":"haaretz","a":"a","s":"u","l":0},{"c":"haaretz","a":"a","s":"u","l":6},{"c":"haaretz","a":"a","s":"u","l":4},{"c":"haaretz","a":"a","s":"u","l":1},{"c":"haaretz","a":"a","s":"u","l":2},{"c":"haaretz","a":"a","s":"u","l":32},{"c":"haaretz","a":"a","s":"w","l":34},{"c":"haaretz","a":"a","s":"u","l":11},{"c":"haaretz","a":"a","s":"u","l":12},{"c":"haaretz","a":"f","s":"u","l":27},{"c":"haaretz","a":"a","s":"u","l":39},{"c":"haaretz","a":"a","s":"u","l":29},{"c":"haaretz","a":"a","s":"w","l":17},{"c":"haaretz","a":"a","s":"u","l":33},{"c":"haaretz","a":"a","s":"u","l":8},{"c":"haaretz","a":"a","s":"u","l":12},{"c":"haaretz","a":"a","s":"w","l":33},{"c":"haaretz","a":"a","s":"w","l":38},{"c":"haaretz","a":"a","s":"u","l":29},{"c":"haaretz","a":"a","s":"w","l":45},{"c":"haaretz","a":"a","s":"w","l":15},{"c":"haaretz","a":"a","s":"u","l":39},{"c":"haaretz","a":"a","s":"w","l":44},{"c":"haaretz","a":"a","s":"h","l":21},{"c":"haaretz","a":"a","s":"w","l":48},{"c":"haaretz","a":"a","s":"u","l":21},{"c":"haaretz","a":"a","s":"u","l":1},{"c":"haaretz","a":"a","s":"w","l":30},{"c":"haaretz","a":"a","s":"u","l":33},{"c":"haaretz","a":"a","s":"w","l":32},{"c":"haaretz","a":"a","s":"w","l":37},{"c":"haaretz","a":"a","s":"u","l":4},{"c":"haaretz","a":"a","s":"w","l":11},{"c":"haaretz","a":"a","s":"w","l":2},{"c":"haaretz","a":"a","s":"u","l":13},{"c":"haaretz","a":"a","s":"u","l":39},{"c":"haaretz","a":"a","s":"u","l":43},{"c":"haaretz","a":"a","s":"w","l":54},{"c":"haaretz","a":"a","s":"w","l":34},{"c":"haaretz","a":"a","s":"u","l":31},{"c":"haaretz","a":"a","s":"u","l":4},{"c":"haaretz","a":"a","s":"w","l":39},{"c":"haaretz","a":"a","s":"u","l":19},{"c":"haaretz","a":"a","s":"u","l":3},{"c":"haaretz","a":"a","s":"u","l":4},{"c":"haaretz","a":"a","s":"u","l":0},{"c":"haaretz","a":"a","s":"w","l":29},{"c":"haaretz","a":"a","s":"u","l":15},{"c":"haaretz","a":"a","s":"w","l":27},{"c":"haaretz","a":"a","s":"w","l":23},{"c":"haaretz","a":"a","s":"w","l":19},{"c":"haaretz","a":"a","s":"u","l":3},{"c":"haaretz","a":"a","s":"u","l":29},{"c":"haaretz","a":"a","s":"u","l":29},{"c":"haaretz","a":"a","s":"u","l":36},{"c":"haaretz","a":"a","s":"w","l":10},{"c":"haaretz","a":"a","s":"u","l":28},{"c":"haaretz","a":"a","s":"u","l":36},{"c":"haaretz","a":"a","s":"w","l":42},{"c":"haaretz","a":"a","s":"u","l":3},{"c":"haaretz","a":"a","s":"w","l":51},{"c":"haaretz","a":"a","s":"w","l":104},{"c":"haaretz","a":"a","s":"u","l":11},{"c":"haaretz","a":"a","s":"w","l":11},{"c":"haaretz","a":"a","s":"u","l":30},{"c":"haaretz","a":"a","s":"w","l":2},{"c":"haaretz","a":"a","s":"u","l":36},{"c":"haaretz","a":"a","s":"w","l":21},{"c":"haaretz","a":"a","s":"u","l":16},{"c":"haaretz","a":"a","s":"w","l":44},{"c":"haaretz","a":"a","s":"w","l":51},{"c":"haaretz","a":"a","s":"w","l":42},{"c":"haaretz","a":"a","s":"u","l":74},{"c":"haaretz","a":"a","s":"u","l":11},{"c":"haaretz","a":"a","s":"w","l":102},{"c":"haaretz","a":"a","s":"u","l":40},{"c":"haaretz","a":"a","s":"u","l":32},{"c":"haaretz","a":"a","s":"w","l":33},{"c":"haaretz","a":"a","s":"w","l":37},{"c":"haaretz","a":"a","s":"u","l":31},{"c":"haaretz","a":"a","s":"u","l":23},{"c":"haaretz","a":"a","s":"w","l":10},{"c":"haaretz","a":"a","s":"u","l":19},{"c":"haaretz","a":"a","s":"w","l":37},{"c":"haaretz","a":"a","s":"u","l":22},{"c":"haaretz","a":"a","s":"w","l":38},{"c":"haaretz","a":"a","s":"w","l":27},{"c":"haaretz","a":"a","s":"u","l":15},{"c":"haaretz","a":"a","s":"w","l":22},{"c":"haaretz","a":"a","s":"w","l":15},{"c":"haaretz","a":"a","s":"u","l":10},{"c":"haaretz","a":"a","s":"w","l":34},{"c":"haaretz","a":"a","s":"w","l":26},{"c":"haaretz","a":"a","s":"w","l":34},{"c":"haaretz","a":"a","s":"u","l":27},{"c":"haaretz","a":"a","s":"u","l":44},{"c":"haaretz","a":"a","s":"u","l":29},{"c":"haaretz","a":"a","s":"w","l":17},{"c":"haaretz","a":"a","s":"w","l":34},{"c":"haaretz","a":"a","s":"u","l":21},{"c":"haaretz","a":"a","s":"w","l":22},{"c":"haaretz","a":"a","s":"u","l":12},{"c":"haaretz","a":"a","s":"u","l":16},{"c":"haaretz","a":"a","s":"u","l":35},{"c":"haaretz","a":"a","s":"w","l":25},{"c":"haaretz","a":"a","s":"u","l":32},{"c":"haaretz","a":"a","s":"u","l":7},{"c":"haaretz","a":"a","s":"u","l":13},{"c":"haaretz","a":"a","s":"u","l":28},{"c":"haaretz","a":"a","s":"u","l":0},{"c":"haaretz","a":"a","s":"w","l":43},{"c":"haaretz","a":"a","s":"u","l":44},{"c":"haaretz","a":"a","s":"u","l":91},{"c":"haaretz","a":"a","s":"h","l":5},{"c":"haaretz","a":"a","s":"u","l":116},{"c":"haaretz","a":"a","s":"w","l":37},{"c":"haaretz","a":"a","s":"u","l":0},{"c":"haaretz","a":"a","s":"u","l":44},{"c":"haaretz","a":"a","s":"w","l":24},{"c":"haaretz","a":"a","s":"w","l":71},{"c":"haaretz","a":"a","s":"u","l":4},{"c":"haaretz","a":"a","s":"u","l":24},{"c":"haaretz","a":"a","s":"w","l":41},{"c":"haaretz","a":"a","s":"u","l":111},{"c":"haaretz","a":"a","s":"w","l":49},{"c":"haaretz","a":"a","s":"u","l":54},{"c":"haaretz","a":"a","s":"u","l":67},{"c":"haaretz","a":"a","s":"h","l":10},{"c":"haaretz","a":"a","s":"w","l":40},{"c":"haaretz","a":"a","s":"u","l":0},{"c":"haaretz","a":"a","s":"u","l":6},{"c":"haaretz","a":"a","s":"u","l":4},{"c":"haaretz","a":"a","s":"u","l":4},{"c":"haaretz","a":"a","s":"u","l":3},{"c":"haaretz","a":"a","s":"u","l":0},{"c":"haaretz","a":"a","s":"u","l":2},{"c":"haaretz","a":"a","s":"u","l":6},{"c":"haaretz","a":"a","s":"w","l":15},{"c":"haaretz","a":"a","s":"u","l":21},{"c":"haaretz","a":"a","s":"u","l":10},{"c":"haaretz","a":"a","s":"u","l":2},{"c":"haaretz","a":"a","s":"h","l":7},{"c":"haaretz","a":"a","s":"w","l":4},{"c":"haaretz","a":"a","s":"u","l":2},{"c":"haaretz","a":"a","s":"u","l":15},{"c":"haaretz","a":"a","s":"u","l":14},{"c":"haaretz","a":"a","s":"u","l":2},{"c":"haaretz","a":"a","s":"u","l":1},{"c":"haaretz","a":"a","s":"w","l":1},{"c":"haaretz","a":"a","s":"h","l":1},{"c":"haaretz","a":"a","s":"u","l":5},{"c":"haaretz","a":"a","s":"u","l":1},{"c":"haaretz","a":"a","s":"u","l":0},{"c":"haaretz","a":"a","s":"w","l":0},{"c":"haaretz","a":"a","s":"u","l":65},{"c":"haaretz","a":"a","s":"w","l":45},{"c":"haaretz","a":"a","s":"w","l":0},{"c":"israelhayom","a":"a","s":"u","l":6},{"c":"israelhayom","a":"a","s":"h","l":6},{"c":"israelhayom","a":"a","s":"h","l":7},{"c":"israelhayom","a":"a","s":"u","l":2},{"c":"israelhayom","a":"a","s":"u","l":0},{"c":"israelhayom","a":"a","s":"u","l":13},{"c":"israelhayom","a":"a","s":"u","l":21},{"c":"israelhayom","a":"a","s":"u","l":9},{"c":"israelhayom","a":"a","s":"u","l":8},{"c":"israelhayom","a":"a","s":"u","l":12},{"c":"israelhayom","a":"a","s":"u","l":12},{"c":"israelhayom","a":"a","s":"u","l":7},{"c":"israelhayom","a":"a","s":"h","l":11},{"c":"israelhayom","a":"a","s":"u","l":10},{"c":"israelhayom","a":"a","s":"u","l":9},{"c":"israelhayom","a":"a","s":"u","l":9},{"c":"israelhayom","a":"a","s":"u","l":5},{"c":"israelhayom","a":"a","s":"u","l":4},{"c":"israelhayom","a":"a","s":"u","l":7},{"c":"israelhayom","a":"a","s":"u","l":3},{"c":"israelhayom","a":"a","s":"w","l":3},{"c":"israelhayom","a":"a","s":"u","l":3},{"c":"israelhayom","a":"a","s":"u","l":3},{"c":"israelhayom","a":"a","s":"u","l":5},{"c":"israelhayom","a":"s","s":"u","l":2},{"c":"israelhayom","a":"a","s":"h","l":3},{"c":"israelhayom","a":"a","s":"u","l":1},{"c":"israelhayom","a":"a","s":"u","l":1},{"c":"israelhayom","a":"a","s":"u","l":0},{"c":"israelhayom","a":"a","s":"u","l":1},{"c":"israelhayom","a":"s","s":"u","l":1},{"c":"maariv","a":"a","s":"w","l":33},{"c":"maariv","a":"s","s":"h","l":6},{"c":"maariv","a":"a","s":"u","l":2},{"c":"maariv","a":"f","s":"u","l":2},{"c":"maariv","a":"f","s":"h","l":5},{"c":"maariv","a":"f","s":"u","l":2},{"c":"maariv","a":"a","s":"h","l":3},{"c":"maariv","a":"a","s":"w","l":31},{"c":"maariv","a":"a","s":"u","l":6},{"c":"maariv","a":"s","s":"h","l":5},{"c":"maariv","a":"f","s":"u","l":0},{"c":"maariv","a":"f","s":"h","l":3},{"c":"maariv","a":"a","s":"u","l":1},{"c":"maariv","a":"a","s":"u","l":3},{"c":"maariv","a":"a","s":"h","l":34},{"c":"maariv","a":"f","s":"h","l":5},{"c":"maariv","a":"f","s":"u","l":1},{"c":"maariv","a":"a","s":"u","l":2},{"c":"maariv","a":"a","s":"h","l":1},{"c":"maariv","a":"s","s":"u","l":7},{"c":"maariv","a":"a","s":"h","l":10},{"c":"maariv","a":"a","s":"h","l":4},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"h","l":15},{"c":"maariv","a":"a","s":"u","l":2},{"c":"maariv","a":"a","s":"h","l":1},{"c":"maariv","a":"a","s":"u","l":2},{"c":"maariv","a":"a","s":"h","l":1},{"c":"maariv","a":"a","s":"h","l":0},{"c":"maariv","a":"a","s":"u","l":11},{"c":"maariv","a":"a","s":"u","l":2},{"c":"maariv","a":"a","s":"u","l":5},{"c":"maariv","a":"a","s":"u","l":5},{"c":"maariv","a":"a","s":"u","l":13},{"c":"maariv","a":"a","s":"u","l":2},{"c":"maariv","a":"a","s":"h","l":10},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":13},{"c":"maariv","a":"a","s":"h","l":6},{"c":"maariv","a":"a","s":"u","l":4},{"c":"maariv","a":"a","s":"u","l":24},{"c":"maariv","a":"f","s":"h","l":4},{"c":"maariv","a":"a","s":"h","l":3},{"c":"maariv","a":"a","s":"u","l":5},{"c":"maariv","a":"a","s":"u","l":8},{"c":"maariv","a":"a","s":"u","l":7},{"c":"maariv","a":"a","s":"u","l":3},{"c":"maariv","a":"a","s":"u","l":4},{"c":"maariv","a":"a","s":"u","l":3},{"c":"maariv","a":"a","s":"u","l":4},{"c":"maariv","a":"a","s":"u","l":4},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":10},{"c":"maariv","a":"f","s":"h","l":6},{"c":"maariv","a":"a","s":"h","l":1},{"c":"maariv","a":"f","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":2},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":15},{"c":"maariv","a":"a","s":"u","l":9},{"c":"maariv","a":"a","s":"h","l":8},{"c":"maariv","a":"a","s":"u","l":4},{"c":"maariv","a":"a","s":"u","l":2},{"c":"maariv","a":"a","s":"u","l":1},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"h","l":9},{"c":"maariv","a":"a","s":"u","l":12},{"c":"maariv","a":"s","s":"u","l":3},{"c":"maariv","a":"a","s":"h","l":3},{"c":"maariv","a":"f","s":"h","l":5},{"c":"maariv","a":"a","s":"u","l":4},{"c":"maariv","a":"a","s":"h","l":0},{"c":"maariv","a":"a","s":"u","l":2},{"c":"maariv","a":"a","s":"h","l":3},{"c":"maariv","a":"a","s":"u","l":3},{"c":"maariv","a":"a","s":"u","l":6},{"c":"maariv","a":"a","s":"u","l":1},{"c":"maariv","a":"a","s":"u","l":6},{"c":"maariv","a":"f","s":"h","l":2},{"c":"maariv","a":"a","s":"u","l":5},{"c":"maariv","a":"a","s":"h","l":3},{"c":"maariv","a":"a","s":"u","l":1},{"c":"maariv","a":"a","s":"u","l":3},{"c":"maariv","a":"a","s":"w","l":1},{"c":"maariv","a":"a","s":"w","l":1},{"c":"maariv","a":"a","s":"u","l":3},{"c":"maariv","a":"a","s":"w","l":2},{"c":"maariv","a":"a","s":"w","l":2},{"c":"maariv","a":"a","s":"u","l":1},{"c":"maariv","a":"a","s":"h","l":3},{"c":"maariv","a":"f","s":"h","l":3},{"c":"maariv","a":"a","s":"w","l":1},{"c":"maariv","a":"a","s":"u","l":3},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":4},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":4},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"h","l":0},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":0},{"c":"maariv","a":"a","s":"u","l":5},{"c":"maariv","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"w","l":0},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"w","l":1},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"h","l":0},{"c":"srugim","a":"a","s":"u","l":1},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"w","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"a","s":"u","l":1},{"c":"srugim","a":"a","s":"u","l":0},{"c":"srugim","a":"s","s":"u","l":0},{"c":"srugim","a":"s","s":"u","l":0},{"c":"bhol","a":"a","s":"u","l":1},{"c":"bhol","a":"a","s":"u","l":1},{"c":"bhol","a":"a","s":"h","l":2},{"c":"bhol","a":"a","s":"h","l":0},{"c":"bhol","a":"a","s":"u","l":1},{"c":"bhol","a":"a","s":"u","l":0},{"c":"bhol","a":"a","s":"u","l":1},{"c":"bhol","a":"a","s":"h","l":2},{"c":"bhol","a":"a","s":"u","l":0},{"c":"bhol","a":"a","s":"u","l":1},{"c":"bhol","a":"a","s":"h","l":0},{"c":"x_bengvir_thread_sample","a":"a","s":"h","l":11},{"c":"x_bengvir_thread_sample","a":"a","s":"u","l":96},{"c":"x_bengvir_thread_sample","a":"a","s":"u","l":29},{"c":"x_bengvir_thread_sample","a":"a","s":"u","l":49},{"c":"x_bengvir_thread_sample","a":"a","s":"h","l":177},{"c":"x_bengvir_thread_sample","a":"a","s":"u","l":50},{"c":"x_bengvir_thread_sample","a":"a","s":"u","l":135},{"c":"x_bengvir_thread_sample","a":"a","s":"u","l":255},{"c":"x_bengvir_thread_sample","a":"a","s":"w","l":121},{"c":"x_bengvir_thread_sample","a":"a","s":"u","l":12},{"c":"x_bengvir_thread_sample","a":"a","s":"u","l":19},{"c":"x_bengvir_thread_sample","a":"a","s":"u","l":12},{"c":"x_bengvir_thread_sample","a":"a","s":"h","l":4},{"c":"x_bengvir_thread_sample","a":"a","s":"u","l":11},{"c":"x_bengvir_thread_sample","a":"a","s":"w","l":17}],"meta":{"ynet":{"name":"ynet","lean":"מרכז-שמאל","url":"https://www.ynet.co.il/news/article/b1fqbrfrme"},"walla":{"name":"וואלה","lean":"מיינסטרים","url":"https://news.walla.co.il/item/3857568"},"haaretz":{"name":"הארץ","lean":"שמאל","url":"https://www.haaretz.co.il/news/elections/2026-07-31/ty-article/.premium/0000019f-b780-d993-af9f-b7d7f0a70000"},"israelhayom":{"name":"ישראל היום","lean":"מרכז-ימין","url":"https://www.israelhayom.co.il/news/politics/article/19724787"},"maariv":{"name":"מעריב","lean":"מיינסטרים / מרכז","url":"https://www.maariv.co.il/news/politics/article-1350856"},"srugim":{"name":"סרוגים","lean":"ציוני-דתי","url":"https://www.srugim.co.il/1290588"},"bhol":{"name":"בחדרי חרדים","lean":"חרדי","url":"https://www.bhol.co.il/"},"x_bengvir_thread_sample":{"name":"X · שרשור בן גביר","lean":"רשת","url":"https://x.com/itamarbengvir/status/2083125407679721584"}},"order":["ynet","walla","haaretz","israelhayom","maariv","srugim","bhol","x_bengvir_thread_sample"],"commentKeys":["ynet","walla","haaretz","israelhayom","maariv","srugim","bhol"],"liveCounts":{"ynet":996,"walla":387,"srugim":45,"bhol":11,"haaretz":284,"israelhayom":31,"maariv":107}}</script>
+<script>
+(function () {
+  const DATA = JSON.parse(document.getElementById('data').textContent);
+  const MODE_LABELS = {
+    all: 'הכל',
+    no_fake: 'בלי מתואם/מזויף',
+    authentic_only: 'רק אותנטיים'
+  };
+  const keep = {
+    all: (a) => true,
+    no_fake: (a) => a !== 'f',
+    authentic_only: (a) => a === 'a'
+  };
+  function fmt(n) { return n.toLocaleString('he-IL'); }
+  function pct(n, d) { return d ? (100 * n / d) : 0; }
+  function pct1(n, d) { return d ? (100 * n / d).toFixed(1) : '0.0'; }
+  function barHTML(warm, unclear, hostile, n) {
+    if (!n) return '<div class="bar" style="height:12px"></div>';
+    const parts = [];
+    [[warm,'#15803d','אוהד'],[unclear,'#94a3b8','לא ברור'],[hostile,'#b91c1c','עוין']].forEach(([v,c,l]) => {
+      if (v <= 0) return;
+      parts.push('<div class="seg" style="width:' + (100*v/n).toFixed(2) + '%;background:' + c + '" title="' + l + ': ' + v + '"></div>');
+    });
+    return '<div class="bar" style="height:12px">' + parts.join('') + '</div>';
+  }
+  function aggregate(mode) {
+    const pred = keep[mode];
+    const by = {};
+    DATA.order.forEach(c => { by[c] = { n:0, w:0, h:0, u:0 }; });
+    let shown = 0, removed = 0, warm = 0, hostile = 0, unclear = 0;
+    DATA.records.forEach(r => {
+      if (!pred(r.a)) { removed++; return; }
+      shown++;
+      const b = by[r.c] || (by[r.c] = { n:0, w:0, h:0, u:0 });
+      b.n++;
+      if (r.s === 'w') { b.w++; warm++; }
+      else if (r.s === 'h') { b.h++; hostile++; }
+      else { b.u++; unclear++; }
+    });
+    return { by, shown, removed, warm, hostile, unclear };
+  }
+  const baseline = aggregate('all');
+  let mode = 'all';
+  function render() {
+    const agg = aggregate(mode);
+    const scored = agg.warm + agg.hostile;
+    document.getElementById('kpiN').textContent = fmt(agg.shown);
+    document.getElementById('kpiWarm').textContent = pct1(agg.warm, scored) + '%';
+    document.getElementById('kpiHostile').textContent = pct1(agg.hostile, scored) + '%';
+    document.getElementById('kpiRemoved').textContent = fmt(agg.removed);
+    document.getElementById('filterMeta').innerHTML =
+      'מוצגים <b>' + fmt(agg.shown) + '</b> מתוך ' + fmt(DATA.records.length) +
+      ' · מחוץ לסינון <b>' + fmt(agg.removed) + '</b>' +
+      (mode === 'all' ? '' : ' · מצב: <b>' + MODE_LABELS[mode] + '</b>');
+    document.getElementById('sentimentModeHint').textContent = '(' + MODE_LABELS[mode] + ')';
+    const tbody = document.getElementById('sentimentBody');
+    tbody.innerHTML = '';
+    DATA.order.forEach(c => {
+      const m = DATA.meta[c];
+      const b = agg.by[c] || { n:0, w:0, h:0, u:0 };
+      const base = baseline.by[c] || { w:0, h:0, n:0 };
+      if (!base.n && !b.n) return;
+      const scoredR = b.w + b.h;
+      const hShare = pct(b.h, scoredR);
+      const wShare = pct(b.w, scoredR);
+      const baseScored = base.w + base.h;
+      const baseH = pct(base.h, baseScored);
+      const delta = hShare - baseH;
+      let deltaHtml = '—';
+      if (mode !== 'all' && baseScored && scoredR) {
+        const cls = delta > 0.5 ? 'up' : (delta < -0.5 ? 'down' : '');
+        const sign = delta > 0 ? '+' : '';
+        deltaHtml = '<span class="delta ' + cls + '">' + sign + delta.toFixed(1) + ' נק׳</span>';
+      }
+      const nameHtml = m.url
+        ? '<a href="' + m.url + '" target="_blank" rel="noopener"><b>' + m.name + '</b></a>'
+        : '<b>' + m.name + '</b>';
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + nameHtml + '<div class="sub">' + m.lean + '</div></td>' +
+        '<td class="num">' + fmt(b.n) + '</td>' +
+        '<td class="num ok">' + fmt(b.w) + '</td>' +
+        '<td class="num bad">' + fmt(b.h) + '</td>' +
+        '<td class="num">' + fmt(b.u) + '</td>' +
+        '<td class="num">' + (scoredR ? hShare.toFixed(0) : '—') + '%</td>' +
+        '<td class="num">' + (scoredR ? wShare.toFixed(0) : '—') + '%</td>' +
+        '<td class="barcell">' + barHTML(b.w, b.u, b.h, b.n) + '</td>' +
+        '<td class="num">' + deltaHtml + '</td>';
+      tbody.appendChild(tr);
+    });
+    const totScored = agg.warm + agg.hostile;
+    const totH = pct(agg.hostile, totScored);
+    const totW = pct(agg.warm, totScored);
+    const baseTotScored = baseline.warm + baseline.hostile;
+    const baseTotH = pct(baseline.hostile, baseTotScored);
+    const dTot = totH - baseTotH;
+    let dHtml = '—';
+    if (mode !== 'all') {
+      const cls = dTot > 0.5 ? 'up' : (dTot < -0.5 ? 'down' : '');
+      const sign = dTot > 0 ? '+' : '';
+      dHtml = '<span class="delta ' + cls + '">' + sign + dTot.toFixed(1) + ' נק׳</span>';
+    }
+    const tr = document.createElement('tr');
+    tr.style.fontWeight = '650';
+    tr.innerHTML =
+      '<td><b>סה״כ</b><div class="sub">כל הזירות</div></td>' +
+      '<td class="num">' + fmt(agg.shown) + '</td>' +
+      '<td class="num ok">' + fmt(agg.warm) + '</td>' +
+      '<td class="num bad">' + fmt(agg.hostile) + '</td>' +
+      '<td class="num">' + fmt(agg.unclear) + '</td>' +
+      '<td class="num">' + (totScored ? totH.toFixed(0) : '—') + '%</td>' +
+      '<td class="num">' + (totScored ? totW.toFixed(0) : '—') + '%</td>' +
+      '<td class="barcell">' + barHTML(agg.warm, agg.unclear, agg.hostile, agg.shown) + '</td>' +
+      '<td class="num">' + dHtml + '</td>';
+    tbody.appendChild(tr);
+  }
+  document.querySelectorAll('.segbtns button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.segbtns button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      mode = btn.getAttribute('data-mode');
+      render();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>
