@@ -196,7 +196,7 @@
                                 id="staticrypt-password"
                                 type="password"
                                 name="password"
-                                placeholder="Password"
+                                placeholder="סיסמה"
                                 autofocus
                             />
 
@@ -833,6 +833,11 @@ exports.init = init;
 
             // init the staticrypt engine
             const staticrypt = staticryptInitiator.init(staticryptConfig, templateConfig);
+            try {
+                localStorage.removeItem("staticrypt_passphrase");
+                localStorage.removeItem("staticrypt_expiration");
+            } catch (err) {}
+
 
             // try to automatically decrypt on load if there is a saved password
             window.onload = async function () {
@@ -881,15 +886,31 @@ exports.init = init;
 
                 const userEl = document.getElementById("staticrypt-user");
                 const passEl = document.getElementById("staticrypt-password");
+                const rememberEl = document.getElementById("staticrypt-remember");
                 const user = userEl ? userEl.value.trim() : "";
                 const passOnly = passEl.value;
-                // Combine in memory only — do not write into the password input
-                const password = user ? (user + ":" + passOnly) : passOnly;
-                const isRememberChecked = document.getElementById("staticrypt-remember").checked;
+                const isRememberChecked = !!(rememberEl && rememberEl.checked);
 
-                const { isSuccessful } = await staticrypt.handleDecryptionOfPage(password, isRememberChecked);
+                // Combine in memory only. If password already starts with "user:",
+                // treat it as a full passphrase (autofill leftover from older builds).
+                const candidates = [];
+                if (user) {
+                    const prefix = user + ":";
+                    if (passOnly.startsWith(prefix)) candidates.push(passOnly);
+                    else candidates.push(prefix + passOnly);
+                }
+                candidates.push(passOnly);
 
-                if (!isSuccessful) {
+                const tried = new Set();
+                let ok = false;
+                for (const password of candidates) {
+                    if (!password || tried.has(password)) continue;
+                    tried.add(password);
+                    const result = await staticrypt.handleDecryptionOfPage(password, isRememberChecked);
+                    if (result && result.isSuccessful) { ok = true; break; }
+                }
+
+                if (!ok) {
                     alert(templateError);
                     passEl.value = "";
                     passEl.focus();
