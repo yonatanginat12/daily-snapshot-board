@@ -1,5 +1,7 @@
-# לוח סטטיסטיקה — סגלוביץ׳–רע״ם (מוגן)
+# לוח סטטיסטיקה — סגלוביץ׳–רע״ם
 
-הדף מוצפן (staticrypt). נדרשים שם משתמש וסיסמה.
+Password-gated GitHub Pages site (staticrypt).
 
-Live: https://yonatanginat12.github.io/segalovitz-stats/
+**Live:** https://yonatanginat12.github.io/segalovitz-stats/
+
+Current build: **war-room v3** (daily brief — punchline → actions → evidence → team appendix).
