@@ -879,43 +879,23 @@ exports.init = init;
             document.getElementById("staticrypt-form").addEventListener("submit", async function (e) {
                 e.preventDefault();
 
-                const password = document.getElementById("staticrypt-password").value,
-                    isRememberChecked = document.getElementById("staticrypt-remember").checked;
+                const userEl = document.getElementById("staticrypt-user");
+                const passEl = document.getElementById("staticrypt-password");
+                const user = userEl ? userEl.value.trim() : "";
+                const passOnly = passEl.value;
+                // Combine in memory only — do not write into the password input
+                const password = user ? (user + ":" + passOnly) : passOnly;
+                const isRememberChecked = document.getElementById("staticrypt-remember").checked;
 
                 const { isSuccessful } = await staticrypt.handleDecryptionOfPage(password, isRememberChecked);
 
                 if (!isSuccessful) {
                     alert(templateError);
+                    passEl.value = "";
+                    passEl.focus();
                 }
             });
         </script>
     
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("staticrypt-form");
-  const u = document.getElementById("staticrypt-user");
-  const p = document.getElementById("staticrypt-password");
-  const remember = document.getElementById("staticrypt-remember");
-  if (!form || !u || !p || !window.staticrypt) return;
-
-  // Replace default submit: combine username+password in memory only —
-  // never write the combined passphrase into the password input.
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    const user = u.value.trim();
-    const passOnly = p.value;
-    const passphrase = user ? (user + ":" + passOnly) : passOnly;
-    const isRememberChecked = !!(remember && remember.checked);
-    const { isSuccessful } = await staticrypt.handleDecryptionOfPage(passphrase, isRememberChecked);
-    if (!isSuccessful) {
-      alert("שם משתמש או סיסמה שגויים");
-      p.value = "";
-      p.focus();
-    }
-  }, true);
-});
-</script>
-
 </body>
 </html>
