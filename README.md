@@ -1,7 +1,6 @@
-# לוח סטטיסטיקה — סגלוביץ׳–רע״ם
+# Daily snapshot board
 
-Password-gated GitHub Pages site (staticrypt).
+Password-gated static page (staticrypt). Contents are encrypted client-side;
+the password is held by the project owner.
 
-**Live:** https://yonatanginat12.github.io/segalovitz-stats/
-
-Current build: **war-room v3** night refresh (2026-08-02) — corpora + analysis republished.
+Build source is kept outside this repo.
