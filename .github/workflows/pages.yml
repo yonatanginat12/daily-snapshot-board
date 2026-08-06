@@ -1,0 +1,37 @@
+# Deploy the static board via Actions instead of the legacy Jekyll builder.
+#
+# Why: the legacy builder parses every file as Liquid, and the staticrypt
+# ciphertext contains random `{{` sequences by chance — which fails the build
+# with a bare "Page build failed". `.nojekyll` is the documented fix but the
+# legacy builder also hung indefinitely (2026-08-06, ~25min in "building").
+# This path just uploads the directory as an artifact. No templating, no parsing.
+name: Deploy static content to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - id: deployment
+        uses: actions/deploy-pages@v4
